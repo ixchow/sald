@@ -1,0 +1,9 @@
+{
+  "name" : "sald-cli",
+  "description" : "16-465 game engine build implementation",
+  "version" : "0.0.1",
+  "author" : "Jacob Slone",
+  "bin" : {
+    "sald" : "bin/sald.js"
+  }
+}

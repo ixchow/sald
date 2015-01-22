@@ -1,0 +1,2 @@
+#Usage
+sald [command] args

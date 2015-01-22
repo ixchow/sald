@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-var cmd = process.argv.length > 2 ? process.argv[2] : 'build';
+var cmd = process.argv.length > 2 ? process.argv[2] : '';
 
 var usage = [
   'sald [command] arg1,...',

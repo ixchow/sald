@@ -36,7 +36,7 @@ module.exports = {
   },
   // Output options
   output : {
-    html : '.tmp/build.html'  //location to output final built project
+    html : 'build.html'  //location to output final built project
   },
   // Options for each file type
   files : {

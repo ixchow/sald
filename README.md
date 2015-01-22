@@ -1,4 +1,15 @@
 #sald
+##Installation
+Fork this repo into desired location then from command line run
+```
+npm link
+```
+Note: sudo may be required on Mac or Linux, or the command prompt may need to be
+run as administrator on Windows.
+
+Note: The current version of node.js for windows has a bug. If you receive an
+ENOENT error, check [here](http://stackoverflow.com/questions/25093276/node-js-windows-error-enoent-stat-c-users-rt-appdata-roaming-npm)
+##
 ##Usage
 ```
 sald [command] args
@@ -6,6 +17,8 @@ sald [command] args
     new/create [dir] - create a new sald project
     build - build sald project in cwd based on build.js
 ```
+You will want to use `sald create myProjName` to create a starter project. It is not
+recommended to do this in the sald directory.
 ##build.js
 The build.js file must be in the current working directory when calling sald build.
 This file should export an object which specifies the output location, entry point, and the method for handling custom file types.

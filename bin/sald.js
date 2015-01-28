@@ -1,4 +1,6 @@
-#!/usr/bin/env node
+#!/bin/sh
+':' //; exec "$(command -v nodejs || command -v node)" "$0" "$@"
+/* the above is a work-around for node being called 'nodejs' on debian */
 
 var cmd = process.argv.length > 2 ? process.argv[2] : '';
 

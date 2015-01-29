@@ -232,26 +232,14 @@ function start(canvas) {
 		evt.preventDefault();
 		return false;
 	});
-    if(canvas.addEventListener){
-        //chrome/ie9/safari/opera
-        myimage.addEventListener("mousewheel", mouseWheel, false);
-        //firefox
-        myimage.addEventListener("DOMMouseScroll", mouseWheel, false);
-    }
-    
-    var mouseCoords = function(xPos, yPos)
-    {
-        this.xPos = xPos;
-        this.yPos = yPos;
-    };
-    
-    var getMousePos = function()
+	
+	var getMousePos = function()
     {
         var xPos = MouseEvent.clientX;
         var yPos = MouseEvent.clientY;
     
-        var coords = new mouseCoords(xPos, yPos);
-        return coords;
+        window.sald.mouseCoords = {x: xPos, y: yPos};
+        return window.sald.mouseCoords;
     };
     
     canvas.addEventListener('onmousedown', window.onmousedown)
@@ -274,9 +262,15 @@ function start(canvas) {
     
     canvas.addEventListener('onmousemove', window.onmousemove)
     {
-        mouseCoords = getMousePos();
+        getMousePos();
     };
     
+    if(canvas.addEventListener){
+        //chrome/ie9/safari/opera
+        myimage.addEventListener("mousewheel", mouseWheel, false);
+        //firefox
+        myimage.addEventListener("DOMMouseScroll", mouseWheel, false);
+    }
     else{
         myimage.attachEvent("onmousewheel", mouseWheel);
     }

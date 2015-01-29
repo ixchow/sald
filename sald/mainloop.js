@@ -227,8 +227,7 @@ function start(canvas) {
 		return false;
 	});
 	
-	var getMousePos = function()
-	{
+	var getMousePos = function() {
 		var xPos = MouseEvent.clientX;
 		var yPos = MouseEvent.clientY;
 	
@@ -236,28 +235,39 @@ function start(canvas) {
 		return window.sald.mouseCoords;
 	};
 	
-	canvas.addEventListener('onmousedown', window.onmousedown)
-	{
-		var temp = mouseCoords;
+	canvas.addEventListener('onmousedown', function () {
+		window.onmousedown();
+		sald.scene && sald.scene.onMouseDown && sald.onMouseDown();
+
+		var temp = window.sald.mouseCoords;
 		return temp;
-	};
+	});
 	
-	canvas.addEventListener('onmouseup', window.onmouseup)
-	{
-		var temp = mouseCoords;
+	canvas.addEventListener('onmouseup', function () {
+		window.onmouseup();
+
+		sald.scene && sald.scene.onMouseUp && sald.onMouseUp();
+
+		var temp = window.sald.mouseCoords;
 		return temp;
-	};
+	});
 	
-	canvas.addEventListener('onclick', window.onclick)
-	{
-		var temp = mouseCoords;
+	canvas.addEventListener('onclick', function () {
+		window.onclick();
+
+		sald.scene && sald.scene.onClick && sald.onClick();
+
+		var temp = window.sald.mouseCoords;
 		return temp;
-	};
+	});
 	
-	canvas.addEventListener('onmousemove', window.onmousemove)
-	{
+	canvas.addEventListener('onmousemove', function () {
+		window.onmousemove();
+
 		getMousePos();
-	};
+
+		sald.scene && sald.scene.onMouseMove && sald.onMouseMove();
+	});
 	
 	if(canvas.addEventListener){
 		//chrome/ie9/safari/opera

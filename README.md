@@ -79,3 +79,38 @@ module.exports = {
 ```
 
 This build.js file will translate png and jpg images using loadImage and wav and ogg files using loadAudio.
+
+
+##mainloop.js
+The mainloop module defines the window.sald object, which contains a number of useful functions/objects.
+
+###window.sald.scene
+
+In the scene object, the user can define custom update, draw, and key functions. Update is called on each step of the program's runtime, with draw called immediately after. 
+
+Considering the Model-View-Controller paradigm, the update function should update the model, while the draw function should update the view.
+
+```
+function update(elapsed){
+  // elapsed is a float measure of how many seconds have passed since the last update
+}
+
+function draw(){
+  // draw whatever should be on the screen
+}
+```
+
+They key function is used for key events, when a key on the keyboard is pressed or released.
+
+The custom key function should be defined as follows:
+
+```
+function key(keyCode, isPressed){
+  // keyCode should be compared to keys values in the window.sald.keyCode object
+  // isPressed is a boolean that can be used to check whether the key was pressed or released
+
+  if (keyCode == window.sald.keyCode.SPACEBAR && isPressed){
+    // have something happen when the spacebar is pressed
+  }
+}
+```

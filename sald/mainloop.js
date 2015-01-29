@@ -219,9 +219,7 @@ function start(canvas) {
 		} else {
 			sald.keys[evt.keyCode] = true;
             
-            var keyname = window.sald.intToKeyCode(evt.keyCode);
-            
-			sald.scene && sald.scene.key && sald.scene.key(keyname, true);
+			sald.scene && sald.scene.key && sald.scene.key(evt.keyCode, true);
 		}
 		evt.preventDefault();
 		return false;
@@ -230,9 +228,7 @@ function start(canvas) {
 	window.addEventListener('keyup', function(evt){
 		delete sald.keys[evt.keyCode];
         
-        var keyname = window.sald.intToKeyCode(evt.keyCode);
-        
-		sald.scene && sald.scene.key && sald.scene.key(keyname, false);
+		sald.scene && sald.scene.key && sald.scene.key(evt.keyCode, false);
 		evt.preventDefault();
 		return false;
 	});

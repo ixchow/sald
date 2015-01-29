@@ -119,4 +119,15 @@ function key(keyCode, isPressed){
 }
 
 window.sald.scene.key = key;
+
+The scrollWheel Function is used for mouse scroll events.
+
+The custom scrollwheel function should be defined as follows:
+
+function scrollWheel(delta){
+//delta defines direction mouse scrolled
+//delta = 1 if mouse scrolled up
+//delta = -1 if mouse scrolled down
+}
+window.sald.scene.scrollWheel = scrollWheel;
 ```

@@ -111,27 +111,6 @@ window.sald.keyCode = {
 	"APOSTROPHE": 222
 };
 
-function generateIntToKeyCode(json){
-	// json must be keys that are strings, integer values
-	var max_i = Number.MIN_VALUE;
-
-	var array = [];
-
-	for (var key in json){
-		if (json.hasOwnProperty(key)){
-			var i = json[key];
-
-			array[i] = key;
-		}
-	}
-
-	return function (i) {
-		return array[i];
-	}
-}
-
-window.sald.intToKeyCode = generateIntToKeyCode(window.sald.keyCode);
-
 //This function sets up the main loop:
 function start(canvas) {
 	

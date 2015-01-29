@@ -110,7 +110,7 @@ window.sald.KeyCode = {
     "MINUS": 189,
     "PERIOD": 190,
     "FORWARD_SLASH": 191,
-    "TILDA": 192,
+    "TILDE": 192,
     "OPEN_BRACKET": 219,
     "BACK_SLASH": 220,
     "CLOSE_BRACKET": 221,

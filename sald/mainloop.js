@@ -13,6 +13,7 @@ window.sald.scene = {}; //the current scene; update, draw, and key functions wil
 window.sald.ctx = null; //the drawing context, call canvas 2d functions here
 window.sald.size = {x:320, y:240, mode:"exact"}; //set your desired size here
 window.sald.keys = {}; //all keys currently held down
+window.sald.mouseCoords = null;
 
 window.sald.KeyCode = {
     "BACKSPACE": 8,
@@ -237,6 +238,45 @@ function start(canvas) {
         //firefox
         myimage.addEventListener("DOMMouseScroll", mouseWheel, false);
     }
+    
+    var mouseCoords = function(xPos, yPos)
+    {
+        this.xPos = xPos;
+        this.yPos = yPos;
+    };
+    
+    var getMousePos = function()
+    {
+        var xPos = MouseEvent.clientX;
+        var yPos = MouseEvent.clientY;
+    
+        var coords = new mouseCoords(xPos, yPos);
+        return coords;
+    };
+    
+    canvas.addEventListener('onmousedown', window.onmousedown)
+    {
+        var temp = mouseCoords;
+        return temp;
+    };
+    
+    canvas.addEventListener('onmouseup', window.onmouseup)
+    {
+        var temp = mouseCoords;
+        return temp;
+    };
+    
+    canvas.addEventListener('onclick', window.onclick)
+    {
+        var temp = mouseCoords;
+        return temp;
+    };
+    
+    canvas.addEventListener('onmousemove', window.onmousemove)
+    {
+        mouseCoords = getMousePos();
+    };
+    
     else{
         myimage.attachEvent("onmousewheel", mouseWheel);
     }

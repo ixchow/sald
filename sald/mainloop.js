@@ -236,7 +236,15 @@ function start(canvas) {
 	
 	canvas.addEventListener('onmousedown', function () {
 		window.onmousedown();
-		sald.scene && sald.scene.onMouseDown && sald.onMouseDown();
+        
+        if(window.MouseEvent.button === 0)
+        {
+            sald.scene && sald.scene.onLeftMouseDown && sald.onLeftMouseDown();
+        }
+        else if(window.MouseEvent.button === 2)
+        {
+            sald.scene && sald.scene.onRightMouseDown && sald.onRightMouseDown();
+        }
 
 		var temp = window.sald.mouseCoords;
 		return temp;
@@ -244,8 +252,20 @@ function start(canvas) {
 	
 	canvas.addEventListener('onmouseup', function () {
 		window.onmouseup();
+<<<<<<< HEAD
+        
+        if(window.MouseEvent.button === 0)
+        {
+            sald.scene && sald.scene.onLeftMouseUp && sald.onLeftMouseUp();
+        }
+        else if(window.MouseEvent.button === 2)
+        {
+            sald.scene && sald.scene.onRightMouseUp && sald.onRightMouseUp();
+        }
+=======
 
 		sald.scene && sald.scene.onMouseUp && sald.scene.onMouseUp();
+>>>>>>> origin/master
 
 		var temp = window.sald.mouseCoords;
 		return temp;
@@ -253,8 +273,20 @@ function start(canvas) {
 	
 	canvas.addEventListener('onclick', function () {
 		window.onclick();
+<<<<<<< HEAD
+        
+        if(window.MouseEvent.button === 0)
+        {
+            sald.scene && sald.scene.leftMouseClick && sald.leftMouseClick();
+        }
+        else if(window.MouseEvent.button === 2)
+        {
+            sald.scene && sald.scene.rightMouseClick && sald.rightMouseClick();
+        }
+=======
 
 		sald.scene && sald.scene.onClick && sald.scene.onClick();
+>>>>>>> origin/master
 
 		var temp = window.sald.mouseCoords;
 		return temp;
@@ -265,7 +297,7 @@ function start(canvas) {
 
 		getMousePos();
 
-		sald.scene && sald.scene.onMouseMove && sald.scene.onMouseMove();
+		sald.scene && sald.scene.onMouseMove && sald.onMouseMove();
 	});
 	
 	if(canvas.addEventListener){

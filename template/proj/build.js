@@ -1,3 +1,7 @@
+function loadJson(file) {
+	return JSON.parse(file.data);
+}
+
 // Load an image file from file = {name,data}
 function loadImage(file) {
 	var script = [
@@ -46,6 +50,9 @@ module.exports = {
 			mime : 'audio/vnd.wave',
 			encoding : 'base64',
 			load: loadAudio
+		},
+		'.json' : {
+			load: loadJson
 		}
 	}
 };

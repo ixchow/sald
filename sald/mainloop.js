@@ -1,9 +1,3 @@
-// TODO
-// Add keymapping json object
-// Add parameter file
-// Resizing code
-// Determine best place to put files
-
 if (typeof(window.sald) === "undefined") {
 	window.sald = {};
 }

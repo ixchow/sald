@@ -95,9 +95,13 @@ function update(elapsed){
   // elapsed is a float measure of how many seconds have passed since the last update
 }
 
+window.sald.scene.update = update;
+
 function draw(){
   // draw whatever should be on the screen
 }
+
+window.sald.scene.draw = draw;
 ```
 
 They key function is used for key events, when a key on the keyboard is pressed or released.
@@ -113,4 +117,6 @@ function key(keyCode, isPressed){
     // have something happen when the spacebar is pressed
   }
 }
+
+window.sald.scene.key = key;
 ```

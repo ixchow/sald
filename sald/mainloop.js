@@ -215,8 +215,21 @@ function start(canvas) {
 		return false;
 	});
     if(canvas.addEventListener){
+        //chrome/ie9/safari/opera
+        myimage.addEventListener("mousewheel", mouseWheel, false);
+        //firefox
+        myimage.addEventListener("DOMMouseScroll", mouseWheel, false);
     }
-    
+    else{
+        myimage.attachEvent("onmousewheel", mouseWheel);
+    }
+    function mouseWheel(e){
+        var e = window.event || e;
+        //1 for up, -1 for down
+        var delta =  Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+        sald.scene && sald.scene.scrollWheel && sald.scene.scrollWheel(delta);
+        return false;
+    };
 	window.requestAnimationFrame(render);
 
 };

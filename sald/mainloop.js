@@ -9,7 +9,7 @@ window.sald.size = {x:320, y:240, mode:"exact"}; //set your desired size here
 window.sald.keys = {}; //all keys currently held down
 window.sald.mouseCoords = null;
 
-window.sald.KeyCode = {
+window.sald.keyCode = {
 	"BACKSPACE": 8,
 	"TAB": 9,
 	"ENTER": 13,
@@ -67,7 +67,6 @@ window.sald.KeyCode = {
 	"Y": 89,
 	"Z": 90,
 	"WINDOWS": 91,
-	"RIGHT_CLICK": 93,
 	"NUMPAD_0": 96,
 	"NUMPAD_1": 97,
 	"NUMPAD_2": 98,
@@ -131,7 +130,7 @@ function generateIntToKeyCode(json){
 	}
 }
 
-window.sald.intToKeyCode = generateIntToKeyCode(window.sald.KeyCode);
+window.sald.intToKeyCode = generateIntToKeyCode(window.sald.keyCode);
 
 //This function sets up the main loop:
 function start(canvas) {

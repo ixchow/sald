@@ -131,3 +131,5 @@ function scrollWheel(delta){
 }
 window.sald.scene.scrollWheel = scrollWheel;
 ```
+
+NOTE: On a Mac, window.sald.keyCode.WINDOWS is the "Command" key.

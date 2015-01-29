@@ -90,6 +90,16 @@ In the scene object, the user can define custom update, draw, and key functions.
 
 Considering the Model-View-Controller paradigm, the update function should update the model, while the draw function should update the view.
 
+```
+function update(elapsed){
+  // elapsed is a float measure of how many seconds have passed since the last update
+}
+
+function draw(){
+  // draw whatever should be on the screen
+}
+```
+
 They key function is used for key events, when a key on the keyboard is pressed or released.
 
 The custom key function should be defined as follows:

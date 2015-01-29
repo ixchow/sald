@@ -245,7 +245,7 @@ function start(canvas) {
 	canvas.addEventListener('onmouseup', function () {
 		window.onmouseup();
 
-		sald.scene && sald.scene.onMouseUp && sald.onMouseUp();
+		sald.scene && sald.scene.onMouseUp && sald.scene.onMouseUp();
 
 		var temp = window.sald.mouseCoords;
 		return temp;
@@ -254,7 +254,7 @@ function start(canvas) {
 	canvas.addEventListener('onclick', function () {
 		window.onclick();
 
-		sald.scene && sald.scene.onClick && sald.onClick();
+		sald.scene && sald.scene.onClick && sald.scene.onClick();
 
 		var temp = window.sald.mouseCoords;
 		return temp;
@@ -265,7 +265,7 @@ function start(canvas) {
 
 		getMousePos();
 
-		sald.scene && sald.scene.onMouseMove && sald.onMouseMove();
+		sald.scene && sald.scene.onMouseMove && sald.scene.onMouseMove();
 	});
 	
 	if(canvas.addEventListener){

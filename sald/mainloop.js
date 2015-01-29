@@ -3,7 +3,7 @@ if (typeof(window.sald) === "undefined") {
 }
 
 //Just 'require'-ing this file installs several useful global properties:
-window.sald.scene = {}; //the current scene; update, draw, and key functions will be called.
+window.sald.scene = {}; //the current scene; update, draw, scrollWheel,  and key functions will be called.
 window.sald.ctx = null; //the drawing context, call canvas 2d functions here
 window.sald.size = {x:320, y:240, mode:"exact"}; //set your desired size here
 window.sald.keys = {}; //all keys currently held down
@@ -261,12 +261,12 @@ function start(canvas) {
     
     if(canvas.addEventListener){
         //chrome/ie9/safari/opera
-        myimage.addEventListener("mousewheel", mouseWheel, false);
+        canvas.addEventListener("mousewheel", mouseWheel, false);
         //firefox
-        myimage.addEventListener("DOMMouseScroll", mouseWheel, false);
+        canvas.addEventListener("DOMMouseScroll", mouseWheel, false);
     }
     else{
-        myimage.attachEvent("onmousewheel", mouseWheel);
+        canvas.attachEvent("onmousewheel", mouseWheel);
     }
     function mouseWheel(e){
         var e = window.event || e;

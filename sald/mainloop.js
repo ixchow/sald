@@ -7,7 +7,7 @@ window.sald.scene = {}; //the current scene; update, draw, scrollWheel,  and key
 window.sald.ctx = null; //the drawing context, call canvas 2d functions here
 window.sald.size = {x:320, y:240, mode:"exact"}; //set your desired size here
 window.sald.keys = {}; //all keys currently held down
-window.sald.mouseCoords = null;
+window.sald.mouseCoords = {x:null, y:null};
 
 window.sald.keyCode = {
 	"BACKSPACE": 8,

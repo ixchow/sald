@@ -11,14 +11,14 @@ Tilemap.prototype.img = null
 
 Tilemap.prototype.getTilesByTag = function(tag){
 	var ret = [];
-	for (var r = 0; r < height; r++)
+	for (var r = 0; r < this.height; r++)
 	{
-		for (var c = 0; c < width; c++)
+		for (var c = 0; c < this.width; c++)
 		{
-			var idx = r * width + c;
-			if (tiles[idx].tags.indexOf(tag) > -1)
+			var idx = r * this.width + c;
+			if (this.tiles[idx].tags.indexOf(tag) > -1)
 			{
-				ret.push({x: c, y: r, tile: tiles[idx]});
+				ret.push({x: c, y: r, tile: this.tiles[idx]});
 			}
 		}
 	}
@@ -27,24 +27,24 @@ Tilemap.prototype.getTilesByTag = function(tag){
 
 // returns the tile { name , tags[] } at location (x,y)
 Tilemap.prototype.getTile = function(x, y){
-	return tiles[y * width + x];
+	return this.tiles[y * this.width + x];
 }
 
 Tilemap.prototype.addTag = function(x, y, tag){
-	tiles[y * width + x].tags.push(tag);
+	this.tiles[y * this.width + x].tags.push(tag);
 }
 
 Tilemap.prototype.removeTag = function(x, y, tag){
-	var idx = y * width + x;
-	tiles[idx].tags = tiles[idx].tags.filter(function(element){return element != tag;});
+	var idx = y * this.width + x;
+	this.tiles[idx].tags = this.tiles[idx].tags.filter(function(element){return element != tag;});
 }
 
 Tilemap.prototype.clearTags = function(x, y){
-	tiles[y * width + x].tags = [];
+	this.tiles[y * this.width + x].tags = [];
 }
 
 Tilemap.prototype.setTags = function(x, y, tags){
-	tiles[y * width + x].tags = tags;
+	this.tiles[y * this.width + x].tags = tags;
 }
 
 Tilemap.prototype.load = function (srcJson) {
@@ -52,6 +52,9 @@ Tilemap.prototype.load = function (srcJson) {
 	for (var i = 0; i < fields.length; i++) {
 		this[fields[i]] = srcJson[fields[i]];
 	}
+	var imgSrc = this.img;
+	this.img = new Image();
+	this.img.src = imgSrc;
 }
 
 Tilemap.prototype.draw = function(camera) {
@@ -67,11 +70,13 @@ Tilemap.prototype.draw = function(camera) {
 
 	for (var ty = minTile.y; ty <= maxTile.y; ++ty) {
 		for (var tx = minTile.x; tx <= maxTile.x; ++tx) {
-			var tileIdx = this.getTile(tx, ty);
+			var idx = 4;
+			if (ty >= 0 && ty < this.height && tx >= 0 && tx < this.width)
+				idx = this.getTile(tx, ty).idx;
 			var ctx = window.sald.ctx;
 			ctx.save();
 			ctx.transform(1, 0, 0, -1, tx, ty + 1);
-			ctx.drawImage(this.img, tileIdx * this.tilesize, 0, this.tilesize, this.tilesize, 0, 0, 1, 1);
+			ctx.drawImage(this.img, idx * this.tilesize, 0, this.tilesize, this.tilesize, 0, 0, 1, 1);
 			ctx.restore();
 		}
 	}

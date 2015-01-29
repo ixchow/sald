@@ -1,5 +1,5 @@
 function loadJson(file) {
-	return JSON.parse(file.data);
+	return 'module.exports = ' + file.data + ';';
 }
 
 // Load an image file from file = {name,data}

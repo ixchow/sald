@@ -218,7 +218,7 @@ function start(canvas) {
 		} else {
 			sald.keys[evt.keyCode] = true;
             
-            var keyname = FUNCTION(evt.keyCode);
+            var keyname = window.sald.intToKeyCode(evt.keyCode);
             
 			sald.scene && sald.scene.key && sald.scene.key(keyname, true);
 		}
@@ -229,7 +229,7 @@ function start(canvas) {
 	window.addEventListener('keyup', function(evt){
 		delete sald.keys[evt.keyCode];
         
-        var keyname = FUNCTION(evt.keyCode);
+        var keyname = window.sald.intToKeyCode(evt.keyCode);
         
 		sald.scene && sald.scene.key && sald.scene.key(keyname, false);
 		evt.preventDefault();

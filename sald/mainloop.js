@@ -239,11 +239,11 @@ function start(canvas) {
         
         if(window.MouseEvent.button === 0)
         {
-            sald.scene && sald.scene.onLeftMouseDown && sald.onLeftMouseDown();
+            sald.scene && sald.scene.onLeftMouseDown && sald.scene.onLeftMouseDown();
         }
         else if(window.MouseEvent.button === 2)
         {
-            sald.scene && sald.scene.onRightMouseDown && sald.onRightMouseDown();
+            sald.scene && sald.scene.onRightMouseDown && sald.scene.onRightMouseDown();
         }
 
 		var temp = window.sald.mouseCoords;
@@ -255,11 +255,11 @@ function start(canvas) {
         
         if(window.MouseEvent.button === 0)
         {
-            sald.scene && sald.scene.onLeftMouseUp && sald.onLeftMouseUp();
+            sald.scene && sald.scene.onLeftMouseUp && sald.scene.onLeftMouseUp();
         }
         else if(window.MouseEvent.button === 2)
         {
-            sald.scene && sald.scene.onRightMouseUp && sald.onRightMouseUp();
+            sald.scene && sald.scene.onRightMouseUp && sald.scene.onRightMouseUp();
         }
 
 		var temp = window.sald.mouseCoords;
@@ -271,11 +271,11 @@ function start(canvas) {
         
         if(window.MouseEvent.button === 0)
         {
-            sald.scene && sald.scene.leftMouseClick && sald.leftMouseClick();
+            sald.scene && sald.scene.leftMouseClick && sald.scene.leftMouseClick();
         }
         else if(window.MouseEvent.button === 2)
         {
-            sald.scene && sald.scene.rightMouseClick && sald.rightMouseClick();
+            sald.scene && sald.scene.rightMouseClick && sald.scene.rightMouseClick();
         }
 
 		var temp = window.sald.mouseCoords;
@@ -287,7 +287,7 @@ function start(canvas) {
 
 		getMousePos();
 
-		sald.scene && sald.scene.onMouseMove && sald.onMouseMove();
+		sald.scene && sald.scene.onMouseMove && sald.scene.onMouseMove();
 	});
 	
 	if(canvas.addEventListener){

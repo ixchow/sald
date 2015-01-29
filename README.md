@@ -148,3 +148,6 @@ leftMouseClick()
 rightMouseDown()
 rightMouseUp()
 rightMouseClick()
+
+
+window.sald.scene can be switched out to accomodate multiple scenes/views/levels in a game.

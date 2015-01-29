@@ -138,9 +138,9 @@ window.sald.scene.scrollWheel = scrollWheel;
 
 A full list of functions that a user can define in the sald object are as follows:
 
-update(elapsedSeconds)
+update(float elapsedSeconds)
 draw()
-key(keyCode, isPressed)
+key(int keyCode, boolean isPressed)
 onMouseMove()
 leftMouseDown()
 leftMouseUp()

@@ -1,3 +1,4 @@
+// Load any JSON file and export it directly
 function loadJson(file) {
 	return 'module.exports = ' + file.data + ';';
 }

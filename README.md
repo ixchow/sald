@@ -120,6 +120,9 @@ function key(keyCode, isPressed){
 
 window.sald.scene.key = key;
 
+
+NOTE: On a Mac, window.sald.keyCode.WINDOWS is the "Command" key.
+
 The scrollWheel Function is used for mouse scroll events.
 
 The custom scrollwheel function should be defined as follows:
@@ -132,4 +135,16 @@ function scrollWheel(delta){
 window.sald.scene.scrollWheel = scrollWheel;
 ```
 
-NOTE: On a Mac, window.sald.keyCode.WINDOWS is the "Command" key.
+
+A full list of functions that a user can define in the sald object are as follows:
+
+update(elapsedSeconds)
+draw()
+key(keyCode, isPressed)
+onMouseMove()
+leftMouseDown()
+leftMouseUp()
+leftMouseClick()
+rightMouseDown()
+rightMouseUp()
+rightMouseClick()

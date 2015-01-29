@@ -7,7 +7,7 @@ window.sald.scene = {}; //the current scene; update, draw, scrollWheel,  and key
 window.sald.ctx = null; //the drawing context, call canvas 2d functions here
 window.sald.size = {x:320, y:240, mode:"exact"}; //set your desired size here
 window.sald.keys = {}; //all keys currently held down
-window.sald.mouseCoords = null;
+window.sald.mouseCoords = {x:null, y:null};
 
 window.sald.keyCode = {
 	"BACKSPACE": 8,
@@ -252,6 +252,7 @@ function start(canvas) {
 	
 	canvas.addEventListener('onmouseup', function () {
 		window.onmouseup();
+<<<<<<< HEAD
         
         if(window.MouseEvent.button === 0)
         {
@@ -261,6 +262,10 @@ function start(canvas) {
         {
             sald.scene && sald.scene.onRightMouseUp && sald.onRightMouseUp();
         }
+=======
+
+		sald.scene && sald.scene.onMouseUp && sald.scene.onMouseUp();
+>>>>>>> origin/master
 
 		var temp = window.sald.mouseCoords;
 		return temp;
@@ -268,6 +273,7 @@ function start(canvas) {
 	
 	canvas.addEventListener('onclick', function () {
 		window.onclick();
+<<<<<<< HEAD
         
         if(window.MouseEvent.button === 0)
         {
@@ -277,6 +283,10 @@ function start(canvas) {
         {
             sald.scene && sald.scene.rightMouseClick && sald.rightMouseClick();
         }
+=======
+
+		sald.scene && sald.scene.onClick && sald.scene.onClick();
+>>>>>>> origin/master
 
 		var temp = window.sald.mouseCoords;
 		return temp;

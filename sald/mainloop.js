@@ -111,12 +111,33 @@ window.sald.KeyCode = {
     "MINUS": 189,
     "PERIOD": 190,
     "FORWARD_SLASH": 191,
-    "TILDA": 192,
+    "TILDE": 192,
     "OPEN_BRACKET": 219,
     "BACK_SLASH": 220,
     "CLOSE_BRACKET": 221,
     "APOSTROPHE": 222
 };
+
+function generateIntToKeyCode(json){
+    // json must be keys that are strings, integer values
+    var max_i = Number.MIN_VALUE;
+
+    var array = [];
+
+    for (var key in json){
+        if (json.hasOwnProperty(key)){
+            var i = json[key];
+
+            array[i] = key;
+        }
+    }
+
+    return function (i) {
+        return array[i];
+    }
+}
+
+window.sald.intToKeyCode = generateIntToKeyCode(window.sald.KeyCode);
 
 //This function sets up the main loop:
 function start(canvas) {
@@ -198,7 +219,7 @@ function start(canvas) {
 		} else {
 			sald.keys[evt.keyCode] = true;
             
-            var keyname = FUNCTION(evt.keyCode);
+            var keyname = window.sald.intToKeyCode(evt.keyCode);
             
 			sald.scene && sald.scene.key && sald.scene.key(keyname, true);
 		}
@@ -209,13 +230,17 @@ function start(canvas) {
 	window.addEventListener('keyup', function(evt){
 		delete sald.keys[evt.keyCode];
         
-        var keyname = FUNCTION(evt.keyCode);
+        var keyname = window.sald.intToKeyCode(evt.keyCode);
         
 		sald.scene && sald.scene.key && sald.scene.key(keyname, false);
 		evt.preventDefault();
 		return false;
 	});
     if(canvas.addEventListener){
+        //chrome/ie9/safari/opera
+        myimage.addEventListener("mousewheel", mouseWheel, false);
+        //firefox
+        myimage.addEventListener("DOMMouseScroll", mouseWheel, false);
     }
     
     var mouseCoords = function(xPos, yPos)
@@ -256,6 +281,16 @@ function start(canvas) {
         mouseCoords = getMousePos();
     };
     
+    else{
+        myimage.attachEvent("onmousewheel", mouseWheel);
+    }
+    function mouseWheel(e){
+        var e = window.event || e;
+        //1 for up, -1 for down
+        var delta =  Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+        sald.scene && sald.scene.scrollWheel && sald.scene.scrollWheel(delta);
+        return false;
+    };
 	window.requestAnimationFrame(render);
 
 };

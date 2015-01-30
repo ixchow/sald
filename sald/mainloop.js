@@ -111,6 +111,27 @@ window.sald.keyCode = {
 	"APOSTROPHE": 222
 };
 
+function generateKeyCodeToString(json){
+	// json must be keys that are strings, integer values
+	var max_i = Number.MIN_VALUE;
+
+	var array = [];
+
+	for (var key in json){
+		if (json.hasOwnProperty(key)){
+			var i = json[key];
+
+			array[i] = key;
+		}
+	}
+
+	return function (i) {
+		return array[i];
+	}
+}
+
+window.sald.keyCodeToString = generateKeyCodeToString(window.sald.keyCode);
+
 //This function sets up the main loop:
 function start(canvas) {
 	
@@ -186,10 +207,12 @@ function start(canvas) {
 	};
 
 	window.addEventListener('keydown', function(evt){
-		if (sald.keys[evt.keyCode]) {
+		var keyString =  window.sald.keyCodeToString(evt.keyCode);
+
+		if (sald.keys[keyString]) {
 			//already handled this keydown
 		} else {
-			sald.keys[evt.keyCode] = true;
+			sald.keys[keyString] = true;
 			
 			sald.scene && sald.scene.key && sald.scene.key(evt.keyCode, true);
 		}
@@ -198,7 +221,9 @@ function start(canvas) {
 	});
 	
 	window.addEventListener('keyup', function(evt){
-		delete sald.keys[evt.keyCode];
+		var keyString =  window.sald.keyCodeToString(evt.keyCode);
+
+		delete sald.keys[keyString];
 		
 		sald.scene && sald.scene.key && sald.scene.key(evt.keyCode, false);
 		evt.preventDefault();

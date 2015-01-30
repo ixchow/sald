@@ -140,14 +140,21 @@ A full list of functions that a user can define in the sald object are as follow
 
 update(float elapsedSeconds)
 draw()
+
 key(int keyCode, boolean isPressed)
+
 onMouseMove()
+
 leftMouseDown()
 leftMouseUp()
 leftMouseClick()
+
 rightMouseDown()
 rightMouseUp()
 rightMouseClick()
+
+// delta is either -1 or 1, scrolling up or down
+scrollWheel(delta)
 
 
 window.sald.scene can be switched out to accomodate multiple scenes/views/levels in a game.

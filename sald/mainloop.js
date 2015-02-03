@@ -13,6 +13,7 @@ window.sald.scene = {}; //the current scene; update, draw, and key functions wil
 window.sald.ctx = null; //the drawing context, call canvas 2d functions here
 window.sald.size = {x:320, y:240, mode:"exact"}; //set your desired size here
 window.sald.keys = {}; //all keys currently held down
+window.sald.mouse = null; //null -> no mouse event has happened yet
 
 //This function sets up the main loop:
 function start(canvas) {
@@ -40,6 +41,9 @@ function start(canvas) {
 		} else if (sald.size.mode === "multiple") {
 			factor = Math.floor(Math.min(maxSize.width / sald.size.x, maxSize.height / sald.size.y)) | 0;
 			factor = Math.max(1, factor);
+		} else if (sald.size.mode === "ratio") {
+			factor = Math.min(maxSize.width / sald.size.x, maxSize.height / sald.size.y);
+			factor = Math.max(1, factor);
 		}
 
 		if (factor != currentFactor) {
@@ -58,7 +62,7 @@ function start(canvas) {
 
 			//store the information into the drawing context for other code:
 			sald.ctx.width = width;
-			sald.ctx.hight = height;
+			sald.ctx.height = height;
 			sald.ctx.factor = factor;
 		}
 	}
@@ -102,6 +106,20 @@ function start(canvas) {
 	window.addEventListener('keyup', function(evt){
 		delete sald.keys[evt.keyCode];
 		sald.scene && sald.scene.key && sald.scene.key(evt.keyCode, false);
+		evt.preventDefault();
+		return false;
+	});
+
+	window.addEventListener('mousemove', function(evt){
+		var rect = canvas.getBoundingClientRect();
+
+		//The '0.5' additions here seem to align a '+' drawn at the cursor
+		//  position to the cursor better, but I'm not sure why:
+		var x = (evt.clientX - 0.5 - rect.left);
+		var y = (evt.clientY + 0.5 - rect.top);
+
+		sald.mouse = {x:x, y:y};
+
 		evt.preventDefault();
 		return false;
 	});

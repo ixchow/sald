@@ -1,3 +1,31 @@
+// Convex polygons are defined as CCW list of point, therefore
+// use right hand rule to determine whether you're "inside" or "outside"
+public class LineSideEnum {
+	private LineSideEnum() {}
+	public static final LineSideEnum ON_LINE = new LineSideEnum();
+	public static final LineSideEnum INSIDE = new LineSideEnum();
+	public static final LineSideEnum OUTSIDE = new LineSideEnum();
+}
+
+function lineSide(p1, p2, point){
+	var x1 = p2.x - p1.x;
+	var y1 = p2.y - p1.y;
+
+	var normal = {x: -y1; y: x;};
+
+	var x2 = point.x - p1.x;
+	var y2 = point.y - p1.y;
+
+	var dotProd = (normal.x * x2) + (normal.y * y2);
+
+	if (dotProd == 0.0){
+		return LineSideEnum.ON_LINE;
+	} else if (dotProd < 0.0){
+		return LineSideEnum.INSIDE;
+	} else {
+		return LineSideEnum.OUTSIDE;
+	}
+}
 
 /* Circle vs Circle
  * INPUT: two circles specified by position and radius:

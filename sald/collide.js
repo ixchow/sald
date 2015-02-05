@@ -79,5 +79,5 @@ module.exports = {
 	convexConvex: convexConvex,
 	rayCircle: rayCircle,
 	rayRectangle: rayRectangle,
-	rayConvex: rayConvex,
+	rayConvex: rayConvex
 };

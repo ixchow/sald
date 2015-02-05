@@ -70,11 +70,44 @@ function rectangleRectangle(r1, r2) {
  *  true if p1 and p2 do intersect
  */
 function convexConvex(p1, p2) {
-	//TODO
-	return false;
+
+	/* Loop through each edge in polygon p2
+	 */
+	for (var i = 0; i < p2.length; i++){
+		var iNext = i + 1 % p2.length;
+
+		var a = p2[i];
+		var b = p2[iNext];
+
+		var netSide = LineSideEnum.OUTSIDE;
+
+		/* For each edge on shape p2, check if each j in p1 is on the 
+		 * outside-side of of the polygon p2. 
+		 */
+		for (int j = 0; j < p1.length; j++){
+			var side = lineSide(a, b, point);
+
+			if (side == LineSideEnum.INSIDE){
+				netSide = LineSideEnum.INSIDE;
+				break;
+			}
+		}
+
+		/* If all points are on the outside-side of the line,
+		 * we know that the two shapes don't intersect
+		 */
+		if (netSide == LineSideEnum.OUTSIDE){
+			return false;
+		}
+	}
+
+	/* If there is no clear separation axis between convex p1 and convex p2,
+	 * then the two shapes must be intersecting.
+	 */
+	return true;
 }
 
-/* Rav vs Circle
+/* Ray vs Circle
  * INPUT: ray specified as a start and end point, circle as above.
  *  ray = {start:{x:, y:}, end:{x:, y:}}
  * RETURN VALUE:

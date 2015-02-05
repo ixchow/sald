@@ -9,7 +9,7 @@
 function circleCircle(c1,c2) {
 	var a = (c1.x - c2.x);
 	var b = (c1.y - c2.y);
-	
+
 	return ((a * a) + (b * b)) < (r * r);
 }
 
@@ -21,8 +21,17 @@ function circleCircle(c1,c2) {
  *  true if r1 and r2 do intersect
  */
 function rectangleRectangle(r1, r2) {
-	//TODO
-	return false;
+	
+	var minX = max(r1.min.x, r2.min.x);
+	var minY = max(r1.min.y, r2.min.y);
+
+	var maxX = min(r1.max.x, r2.max.x);
+	var maxY = min(r1.max.x, r2.max.x);
+
+	var x = maxX - minX;
+	var y = maxY - minY;
+
+	return (x * y) > 0;
 }
 
 /* Convex vs Convex

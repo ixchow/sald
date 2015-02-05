@@ -1,3 +1,8 @@
+// Load any JSON file and export it directly
+function loadJson(file) {
+	return 'module.exports = ' + file.data + ';';
+}
+
 // Load an image file from file = {name,data}
 function loadImage(file) {
 	var script = [
@@ -46,6 +51,9 @@ module.exports = {
 			mime : 'audio/vnd.wave',
 			encoding : 'base64',
 			load: loadAudio
+		},
+		'.json' : {
+			load: loadJson
 		}
 	}
 };

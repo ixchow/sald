@@ -1,0 +1,403 @@
+<html>
+<style>
+body {
+	text-align:center;
+	background:#452267;
+	color:#fff;
+}
+</style>
+<script>
+var modCache = {};
+var mods = {
+  'src/main.js' : function(module) {
+    
+    var mainloop = require('/home/prajwal/Desktop/GEP/tilemap/sald/sald/mainloop.js');
+    
+    sald.size = {x:320, y:240, mode:"multiple"};
+    sald.scene = require('src/town.js');
+    
+    window.main = function main() {
+    	mainloop.start(document.getElementById("canvas"));
+    	// window.Tilemap = Tilemap;
+    };
+    },
+  '/home/prajwal/Desktop/GEP/tilemap/sald/sald/mainloop.js' : function(module) {
+    // TODO
+    // Add keymapping json object
+    // Add parameter file
+    // Resizing code
+    // Determine best place to put files
+    
+    if (typeof(window.sald) === "undefined") {
+    	window.sald = {};
+    }
+    
+    //Just 'require'-ing this file installs several useful global properties:
+    window.sald.scene = {}; //the current scene; update, draw, and key functions will be called.
+    window.sald.ctx = null; //the drawing context, call canvas 2d functions here
+    window.sald.size = {x:320, y:240, mode:"exact"}; //set your desired size here
+    window.sald.keys = {}; //all keys currently held down
+    
+    //This function sets up the main loop:
+    function start(canvas) {
+    
+    	var sald = window.sald; //redundant, probably
+    
+    	window.sald.ctx = canvas.getContext('2d');
+    
+    	//------------ handle canvas sizing --------------
+    
+    	var currentFactor = -1;
+    
+    	function resized() {
+    		var parent = canvas.parentNode;
+    		var parentStyle = getComputedStyle(parent);
+    		var maxSize = {width:parent.clientWidth, height:parent.clientHeight};
+    		maxSize.width -= parseInt(parentStyle.getPropertyValue("padding-left")) + parseInt(parentStyle.getPropertyValue("padding-right"));
+    		maxSize.height -= parseInt(parentStyle.getPropertyValue("padding-top")) + parseInt(parentStyle.getPropertyValue("padding-bottom"));
+    
+    		var factor;
+    
+    		if (typeof(sald.size.mode) === "undefined" || sald.size.mode === "exact") {
+    			factor = 1;
+    
+    		} else if (sald.size.mode === "multiple") {
+    			factor = Math.floor(Math.min(maxSize.width / sald.size.x, maxSize.height / sald.size.y)) | 0;
+    			factor = Math.max(1, factor);
+    		}
+    
+    		if (factor != currentFactor) {
+    			currentFactor = factor;
+    
+    			var width = Math.round(sald.size.x * factor);
+    			var height = Math.round(sald.size.y * factor);
+    
+    			//actually set canvas size:
+    			//   ...both the display size:
+    			canvas.style.width = width + "px";
+    			canvas.style.height = height + "px";
+    			//   ...and the actual pixel count:
+    			canvas.width = width;
+    			canvas.height = height;
+    
+    			//store the information into the drawing context for other code:
+    			sald.ctx.width = width;
+    			sald.ctx.hight = height;
+    			sald.ctx.factor = factor;
+    		}
+    	}
+    
+    	//install 'resized' to handle window resize events:
+    	window.addEventListener('resize', resized);
+    	//also call it now to set up a good initial size:
+    	resized();
+    
+    
+    	// -----------------------
+    	// ----- Main Loop -------
+    	// -----------------------
+    	var previous = NaN;
+    	function render(timestamp) {
+    		if (isNaN(previous)) {
+    			previous = timestamp;
+    		}
+    		var elapsed = (timestamp - previous) / 1000.0;
+    		previous = timestamp;
+    
+    		if(elapsed > .1) elapsed = .1;
+    		
+    		sald.scene && sald.scene.update && sald.scene.update(elapsed);
+    		sald.scene && sald.scene.draw && sald.scene.draw();
+    
+    		window.requestAnimationFrame(render);
+    	};
+    
+    	window.addEventListener('keydown', function(evt){
+    		if (sald.keys[evt.keyCode]) {
+    			//already handled this keydown
+    		} else {
+    			sald.keys[evt.keyCode] = true;
+    			sald.scene && sald.scene.key && sald.scene.key(evt.keyCode, true);
+    		}
+    		evt.preventDefault();
+    		return false;
+    	});
+    
+    	window.addEventListener('keyup', function(evt){
+    		delete sald.keys[evt.keyCode];
+    		sald.scene && sald.scene.key && sald.scene.key(evt.keyCode, false);
+    		evt.preventDefault();
+    		return false;
+    	});
+    
+    	window.requestAnimationFrame(render);
+    
+    };
+    
+    
+    module.exports = {
+    	start:start
+    };
+    },
+  'src/town.js' : function(module) {
+    
+    var PlayerSpeed = 4.0; //tiles per second
+    
+    var heroImgs = [
+    	require('img/hero1.png'),
+    	require('img/hero2.png'),
+    	require('img/hero3.png')];
+    
+    var Tilemap = require('/home/prajwal/Desktop/GEP/tilemap/sald/sald/tilemap.js');
+    
+    var tilemap = new Tilemap(require('tilemaps/pita.json'));
+    
+    //camera position (in tiles):
+    var camera = {
+    	x: 4.5,
+    	y: 5.5
+    };
+    
+    //player position (in tiles):
+    var player = {
+    	x: 4.5,
+    	y: 5.5,
+    	frameAcc: 0.0,
+    	frame: 0,
+    };
+    
+    
+    function draw() {
+    	var ctx = sald.ctx;
+    
+    	//First, clear the screen:
+    	ctx.setTransform(ctx.factor,0, 0,ctx.factor, 0,0);
+    	ctx.fillStyle = "#f0f"; //bright pink, since this *should* be drawn over
+    
+    	ctx.fillRect(0, 0, 320, 240); //<--- hardcoded size. bad style!
+    
+    	//don't interpolate scaled images. Let's see those crisp pixels:
+    	ctx.imageSmoothingEnabled = false;
+    
+    	//Now transform into camera space:
+    	//  (units are tiles, +x is right, +y is up, camera is at the center:
+    	ctx.setTransform(
+    		//x direction:
+    			ctx.factor * tilemap.tilesize, 0,
+    		//y direction (sign is negative to make +y up):
+    			0,-ctx.factor * tilemap.tilesize,
+    		//offset (in pixels):
+    			ctx.factor * (320 / 2 - Math.round(camera.x * tilemap.tilesize)),
+    			ctx.factor * (240 / 2 + Math.round(camera.y * tilemap.tilesize)) //<-- y is added here because of sign flip
+    		);
+    	
+    	tilemap.draw(camera);
+    
+    	//draw the player:
+    	(function draw_player() {
+    		var img = heroImgs[player.frame];
+    		ctx.save();
+    		//locally flip the 'y' axis since images draw with upper-left origins:
+    		ctx.transform(1,0, 0,-1,
+    			Math.round(player.x * tilemap.tilesize - 0.5 * img.width) / tilemap.tilesize,
+    			Math.round(player.y * tilemap.tilesize - 0.5 * img.height) / tilemap.tilesize + 1
+    			);
+    		ctx.drawImage(img,
+    			0, 0, img.width, img.height,
+    			0,0,1,1);
+    		ctx.restore();
+    	})();
+    
+    	//rounded corners:
+    	ctx.setTransform(ctx.factor,0, 0,ctx.factor, 0,0);
+    	ctx.fillStyle = "#452267"; //background color of page
+    	ctx.fillRect(0,0, 1,2);
+    	ctx.fillRect(1,0, 1,1);
+    
+    	ctx.fillRect(0,238, 1,2);
+    	ctx.fillRect(1,239, 1,1);
+    
+    	ctx.fillRect(319,0, 1,2);
+    	ctx.fillRect(318,0, 1,1);
+    
+    	ctx.fillRect(319,238, 1,2);
+    	ctx.fillRect(318,239, 1,1);
+    	
+    
+    }
+    
+    function update(elapsed) {
+    	var keys = sald.keys;
+    
+    	var command = {
+    		x:0.0,
+    		y:0.0
+    	};
+    	//First column is 'wasd', second is arrow keys:
+    	if (keys[65] || keys[37]) command.x -= 1.0;
+    	if (keys[68] || keys[39]) command.x += 1.0;
+    	if (keys[83] || keys[40]) command.y -= 1.0;
+    	if (keys[87] || keys[38]) command.y += 1.0;
+    	
+    	if (command.x != 0.0 || command.y != 0.0) {
+    		var len = Math.sqrt(command.x * command.x + command.y * command.y);
+    		command.x /= len;
+    		command.y /= len;
+    
+    		player.x += command.x * PlayerSpeed * elapsed;
+    		player.y += command.y * PlayerSpeed * elapsed;
+    
+    		//alternate player frames 1 and 2 if walking:
+    		player.frameAcc = (player.frameAcc + (elapsed * PlayerSpeed) / 0.3) % 2;
+    		player.frame = 1 + Math.floor(player.frameAcc);
+    	} else {
+    		//player is stopped:
+    		player.frame = 0;
+    	}
+    
+    	//pan camera if player is within 3 tiles of the edge:
+    	camera.x = Math.max(camera.x, player.x - (320 / tilemap.tilesize / 2 - 3));
+    	camera.x = Math.min(camera.x, player.x + (320 / tilemap.tilesize / 2 - 3));
+    	camera.y = Math.max(camera.y, player.y - (240 / tilemap.tilesize / 2 - 3));
+    	camera.y = Math.min(camera.y, player.y + (240 / tilemap.tilesize / 2 - 3));
+    
+    }
+    
+    function key(key, state) {
+    	//don't do anything
+    }
+    
+    
+    module.exports = {
+    	draw:draw,
+    	update:update,
+    	key:key
+    };
+    },
+  'img/hero1.png' : function(module) {
+    var img = new Image();
+    img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAtklEQVQ4je2SMQrDMAxFv4Kha6/RJUM2hx4hB/A9co7cowfI3sXYm4YsvkbWQiEdiiAYOwTsrf2TrC89hCzg50QSdHe9lYDYegIAJbBb9ygbDWZj64nqwL4KbNBUIe30B5aLgDpnE9iArafqh01HRTJ5YAMAkFiaU6q+QwUA7TDqpLu6ZDpXv8yTb3KmWl2aduC1w6hVIn9Rq3vmfl3ygY17X/s+9knIMTQ3XaTX/rHMkz/Zd14fVnVAEo6r8/sAAAAASUVORK5CYII=";
+    module.exports = img;},
+  'img/hero2.png' : function(module) {
+    var img = new Image();
+    img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAy0lEQVQ4je2SMQ6DMAxFv6tIXblGFwY2og5l5wC5B+fgHj0AOwtKtgwsuQYrEhIdilFUBYRKtvZNthX/fFsGfg7iILvn8xkh2xkCAMFit+x5zhrUbDtDFEfsjbMKlyhKHn/B8xAQ52ycVbCdoeiHTXuP2LmzCgDAMTeH2Nzht44FAKRl9VjyEQDEoPXeTtOyykP1vqkNeWKrIICrGHTLxSmRhRh0648/JVJuOgwxJbII1dm5s0qHRGkZgV2uDrc++mD0k76pzcG+47wAFLNJYge1b5MAAAAASUVORK5CYII=";
+    module.exports = img;},
+  'img/hero3.png' : function(module) {
+    var img = new Image();
+    img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAwklEQVQ4je2SMQ7CMAxFv1Ek1lyDhaFbI5buHCD34By9BwfozlIlm4cuuUZWpEploBZFhFLRbPAmK46fbCfAz0ESFIdyWCPi1hMAKJHtivO61mAHbj1RHtmdwBabLKYJf+F6CMjzbQJbcOsp+8emuUvSeWALAJBYilN8tcO5aRQA7I+nMpmN7uXosWs79NqYaa5rak/vZCo6J4LAFr02lYruIvlemwrANdlhSpZ69VEyCwHJkbefCkeeOuya2i+sW84NsThGhjwA1vYAAAAASUVORK5CYII=";
+    module.exports = img;},
+  '/home/prajwal/Desktop/GEP/tilemap/sald/sald/tilemap.js' : function(module) {
+    var Tilemap = function(srcJson){
+    	this.load(srcJson);
+    }
+    
+    Tilemap.prototype.width = 0
+    Tilemap.prototype.height = 0
+    Tilemap.prototype.tilesize = 8
+    Tilemap.prototype.tilecount = 0
+    Tilemap.prototype.tiles = []
+    Tilemap.prototype.img = null
+    
+    Tilemap.prototype.getTilesByTag = function(tag){
+    	var ret = [];
+    	for (var r = 0; r < this.height; r++)
+    	{
+    		for (var c = 0; c < this.width; c++)
+    		{
+    			var idx = r * this.width + c;
+    			if (this.tiles[idx].tags.indexOf(tag) > -1)
+    			{
+    				ret.push({x: c, y: r, tile: this.tiles[idx]});
+    			}
+    		}
+    	}
+    	return ret;
+    }
+    
+    // returns the tile { name , tags[] } at location (x,y)
+    Tilemap.prototype.getTile = function(x, y){
+    	return this.tiles[y * this.width + x];
+    }
+    
+    Tilemap.prototype.addTag = function(x, y, tag){
+    	this.tiles[y * this.width + x].tags.push(tag);
+    }
+    
+    Tilemap.prototype.removeTag = function(x, y, tag){
+    	var idx = y * this.width + x;
+    	this.tiles[idx].tags = this.tiles[idx].tags.filter(function(element){return element != tag;});
+    }
+    
+    Tilemap.prototype.clearTags = function(x, y){
+    	this.tiles[y * this.width + x].tags = [];
+    }
+    
+    Tilemap.prototype.setTags = function(x, y, tags){
+    	this.tiles[y * this.width + x].tags = tags;
+    }
+    
+    Tilemap.prototype.load = function (srcJson) {
+    	var fields = ["width", "height", "tilesize", "tilecount", "tiles", "img"];
+    	for (var i = 0; i < fields.length; i++) {
+    		this[fields[i]] = srcJson[fields[i]];
+    	}
+    	var imgSrc = this.img;
+    	this.img = new Image();
+    	this.img.src = imgSrc;
+    }
+    
+    Tilemap.prototype.draw = function(camera) {
+    	var size = window.sald.size;
+    	var minTile = {
+    		x: Math.floor(camera.x - (size.x / 2 / this.tilesize)) | 0,
+    		y: Math.floor(camera.y - (size.y / 2 / this.tilesize)) | 0
+    	};
+    	var maxTile = {
+    		x: Math.floor(camera.x + (size.x / 2 / this.tilesize)) | 0,
+    		y: Math.floor(camera.y + (size.y / 2 / this.tilesize)) | 0
+    	};
+    
+    	for (var ty = minTile.y; ty <= maxTile.y; ++ty) {
+    		for (var tx = minTile.x; tx <= maxTile.x; ++tx) {
+    			var idx = 4;
+    			if (ty >= 0 && ty < this.height && tx >= 0 && tx < this.width)
+    				idx = this.getTile(tx, ty).idx;
+    			var ctx = window.sald.ctx;
+    			ctx.save();
+    			ctx.transform(1, 0, 0, -1, tx, ty + 1);
+    			ctx.drawImage(this.img, idx * this.tilesize, 0, this.tilesize, this.tilesize, 0, 0, 1, 1);
+    			ctx.restore();
+    		}
+    	}
+    }
+    
+    module.exports = Tilemap;},
+  'tilemaps/pita.json' : function(module) {
+    module.exports = {
+    	"width": 9,
+    	"height": 11,
+    	"tilesize": 20,
+    	"tilecount": 99,
+    	"tiles": [{"idx": 6, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 8, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 6, "tags": []},{"idx": 7, "tags": []},{"idx": 8, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 5, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 5, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 0, "tags": []},{"idx": 1, "tags": []},{"idx": 2, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 3, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 4, "tags": []},{"idx": 3, "tags": []},{"idx": 0, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 1, "tags": []},{"idx": 2, "tags": []}],
+    	"img": "data:image/jpg;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAAUCAIAAACrs4CLAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3wEdEBQAgifWjQAAAe9JREFUaN7tmr1ugzAQgK8I8QaeumSLlCWVumfPY7A2Q16A0S/AE/Qx2Dp0z5AlUpaIhYk3YOpwyLIA28E/Adc+sWHO5u7z+e7g7evnAwAAoGgzWLdQ0u23m+u9LtqMHHU0tBVQ0onuXm6Hz92v5HGTeQHA5NmBHQAATTFe4ViD9rwpWkT7tV8pRZVRqN3pl5Ch5MadjP1SVBkl3SQZdp2Y+EIGmull4W2/3TzJzbJ2YOt04cTEFzIc8TGAgMl4X67TDrhOR05MIEi53A5eQLCsBArH5DHBiBFFF0q6Mm/mzlXmjSQLNgweeDmK/UnIO2NAAyNmcNbw0eVxIrP4KPPmcSIi7Mz5wMuRpCHDIUoz5WcN4+P8/S7HAgf3E62+UxDhsJDAXu81urythLu2rXosYs4RkGgksKKCKMLha3iw4m9MNfwtiCIc6vAwTief9PeqWmcRDv3wICkomI/ZGGUByerMCMd/CA/8LheBgmMQC2UBiWO85iPEakX5FU1yd27HiRz772QuXoTvuMjr6giHaXtDKXq9SOTDBRl8tVzmjXU+YkIqO0ccdTZjzuFxLGG5qsVyQ++7jDJsMHzn9vWV+inpYrWizlVtiS3/8QcKj691/amJCsNFuMihtKsVebo6+U/eUnxMNuZZX9+i/j+Q3f0BP5FWqAAAAABJRU5ErkJggg=="
+    };}
+}
+function require(s) {
+	if(modCache[s] == null) {
+		modCache[s] = {exports:{}};
+		mods[s](modCache[s]);
+		return modCache[s].exports;
+	} else {
+		return modCache[s].exports;
+	}
+}
+require("src/main.js");
+
+</script>
+<body onload="main()">
+<canvas id="canvas"></canvas>
+<p>
+Use WASD or the arrow keys to run around.
+</p>
+</body>
+</html>

@@ -7,8 +7,10 @@
  *  true if c1 and c2 do intersect
  */
 function circleCircle(c1,c2) {
-	//TODO
-	return false;
+	var a = (c1.x - c2.x);
+	var b = (c1.y - c2.y);
+	
+	return ((a * a) + (b * b)) < (r * r);
 }
 
 /* Rectangle vs Rectangle

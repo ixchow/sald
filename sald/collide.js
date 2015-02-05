@@ -7,6 +7,10 @@ public class LineSideEnum {
 	public static final LineSideEnum OUTSIDE = new LineSideEnum();
 }
 
+function dotProduct(v1, v2){
+	return (v1.x * v2.x) + (v1.y * v2.y);
+}
+
 function lineSide(p1, p2, point){
 	var x1 = p2.x - p1.x;
 	var y1 = p2.y - p1.y;
@@ -16,7 +20,9 @@ function lineSide(p1, p2, point){
 	var x2 = point.x - p1.x;
 	var y2 = point.y - p1.y;
 
-	var dotProd = (normal.x * x2) + (normal.y * y2);
+	var v2 = {"x" : x2, "y" : y2};
+
+	var dotProd = dotProduct(normal, v2);
 
 	if (dotProd == 0.0){
 		return LineSideEnum.ON_LINE;

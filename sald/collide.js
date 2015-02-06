@@ -11,6 +11,48 @@ function dotProduct(v1, v2){
 	return (v1.x * v2.x) + (v1.y * v2.y);
 }
 
+public class Ray{
+	var start, end;
+
+	public Ray(_start, _end){
+		start = _start;
+		end = _end;
+	}
+
+	/* Given an input x value, return a value between 0.0 and 1.0 
+	 * if the x would lie on the ray, null otherwise.
+	 */
+	public xToProgress(x){
+		if (x < start.x || x > end.x) return null;
+
+		var cX = (x - start.x);
+		var endX = end.x - start.x;
+
+		return cx / endX;
+	}
+}
+
+public class Vector{
+	var x, y;
+
+	public Vector(_x, _y){
+		x = _x;
+		y = _y;
+	}
+
+	public plus(v){
+		return {"x": x + v.x, "y": y + v.y};
+	}
+
+	public minus(v){
+		return {"x": x - v.x, "y": y - v.y};
+	}
+
+	public timesScalar(scalar){
+		return {"x": scalar * x, "y": scalar * y};
+	}
+}
+
 function lineSide(p1, p2, point){
 	var x1 = p2.x - p1.x;
 	var y1 = p2.y - p1.y;
@@ -20,7 +62,7 @@ function lineSide(p1, p2, point){
 	var x2 = point.x - p1.x;
 	var y2 = point.y - p1.y;
 
-	var v2 = {"x" : x2, "y" : y2};
+	var v2 = new Vector(x2, y2);
 
 	var dotProd = dotProduct(normal, v2);
 
@@ -122,8 +164,44 @@ function convexConvex(p1, p2) {
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
 function rayCircle(r, c) {
-	//TODO
-	return null;
+	var start = new Vector(r.start.x - c.x, r.start.y - c.y);
+	var end = new Vector(r.end.x - c.x, r.end.y - c.y);
+
+	var rayVector = new Vector(end.x - start.x, end.y - start.y);
+
+	var radius = c.radius;
+
+	// Quadratic Formula
+
+	// TODO cull points that are not going to lead anywhere
+
+	var a = (rayVector.x * rayVector.x) + (rayVector.y * rayVector.y);
+	var b = 2 * ((rayVector.x * start.x) + (rayVector.y * start.y));
+	var c = (start.x * start.x) + (start.y * start.y) - (radius * radius);
+
+	var delta = b * b - (4 * a * c);
+
+	// Check how many points of intersection there are
+	if (delta < 0){
+		// 0 intersections
+		return null;
+	} else if (delta == 0){ 
+		// 1 intersection
+		var u = -b / (2 * a);
+		var point = start.plus(rayVector.timesScalar(u));
+
+		return r.xToProgress(point.x);
+	} else {
+		// 2 intersections
+		squareRootDelta = sqrt(delta);
+
+		var u1 = (-b + squareRootDelta) / (2 * a);
+		// var u2 = (-b - squareRootDelta) / (2.0 * a);
+
+		var point = start.plus(rayVector.timesScalar(u1));
+
+		return r.xToProgress(point.x);
+	}
 }
 
 /* Rav vs Rectangle

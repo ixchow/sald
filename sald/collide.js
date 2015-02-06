@@ -19,16 +19,35 @@ public class Ray{
 		end = _end;
 	}
 
-	/* Given an input x value, return a value between 0.0 and 1.0 
-	 * if the x would lie on the ray, null otherwise.
+	public function isMoreVertical(){
+		return abs(end.x - start.x) < abs(end.y - start.y);
+	}
+
+	/* Given an input (x,y) value, return a value between 0.0 and 1.0 
+	 * if the x would lie on the ray, use y if the line is near vertical
+	 * return null otherwise.
+	 * 
+	 * DO NOT USE to check whether point is precisely on ray, but rather where
+	 * along the ray is closest should it be near the ray
 	 */
-	public xToProgress(x){
+	public function pointToProgress(point){
+		var x = point.x;
+		var y = point.y;
+
+		if (y < start.y || y > end.y) return null;
 		if (x < start.x || x > end.x) return null;
 
-		var cX = (x - start.x);
-		var endX = end.x - start.x;
+		if (isMoreVertical()){
+			var cY = (y - start.y);
+			var endY = end.y - start.y;
 
-		return cx / endX;
+			return cY / endY;
+		} else {
+			var cX = (x - start.x);
+			var endX = end.x - start.x;
+
+			return cx / endX;
+		}
 	}
 }
 
@@ -40,15 +59,15 @@ public class Vector{
 		y = _y;
 	}
 
-	public plus(v){
+	public function plus(v){
 		return {"x": x + v.x, "y": y + v.y};
 	}
 
-	public minus(v){
+	public function minus(v){
 		return {"x": x - v.x, "y": y - v.y};
 	}
 
-	public timesScalar(scalar){
+	public function timesScalar(scalar){
 		return {"x": scalar * x, "y": scalar * y};
 	}
 }
@@ -189,7 +208,7 @@ function rayCircle(r, c) {
 		var u = -b / (2 * a);
 		var point = start.plus(rayVector.timesScalar(u));
 
-		progress = r.xToProgress(point.x);
+		progress = r.pointToProgress(point);
 	} else if (delta > 0){
 		// 2 intersections
 		squareRootDelta = sqrt(delta);
@@ -199,7 +218,7 @@ function rayCircle(r, c) {
 
 		var point = start.plus(rayVector.timesScalar(u1));
 
-		progress = r.xToProgress(point.x);
+		progress = r.pointToProgress(point);
 	}
 
 	if (progress == null) {
@@ -218,6 +237,20 @@ function rayCircle(r, c) {
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
 function rayRectangle(r, b) {
+	// Don't do unneccessary math if the ray is not possibly intersecting
+	var maxY = max(ray.start.y, ray.end.y);
+	if (maxY < b.min.y) return null;
+
+	var minY = min(ray.start.y, ray.end.y);
+	if (minY > b.max.y) return null;
+
+	var maxX = max(ray.start.x, ray.end.x);
+	if (maxX < b.min.x) return null;
+
+	var minX = min(ray.start.x, ray.end.x);
+	if (minX > b.max.x) return null;
+
+
 	//TODO
 	return null;
 

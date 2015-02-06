@@ -229,6 +229,109 @@ function rayCircle(r, c) {
 	}
 }
 
+function allPointsOnOneSideOfBoundingBox(ray, box){
+	var maxY = max(ray.start.y, ray.end.y);
+	if (maxY < box.min.y) return true;
+
+	var minY = min(ray.start.y, ray.end.y);
+	if (minY > box.max.y) return true;
+
+	var maxX = max(ray.start.x, ray.end.x);
+	if (maxX < box.min.x) return true;
+
+	var minX = min(ray.start.x, ray.end.x);
+	if (minX > box.max.x) return true;
+
+	return false;
+}
+
+function getBoundingBox(poly){
+	var minX = Number.MAX_VALUE;
+	var minY = Number.MAX_VALUE;
+	var maxX = Number.MIN_VALUE;
+	var maxY = Number.MIN_VALUE;
+
+	for (int i = 0; i < poly.length; i++){
+		var point = poly[i];
+
+		minX = min(point.x, minX);
+		minY = min(point.y, minY);
+		maxX = max(point.x, maxX);
+		maxY = max(point.y, maxY);
+	}
+
+	var minP = {"x": minX, "y": minY};
+	var maxP = {"x": maxX, "y": maxY};
+
+	return {"min": minP, "max": maxP};
+}
+
+function findRayIntersectPoly(points){
+	var numPoints = points.length;
+
+	boolean vertical = false;
+
+	for (int i = 0; i < numPoints; i++){
+		int iNext = (i+1) % numPoints;
+
+		var p1 = points[i];
+		var p2 = points[iNext];
+
+		var startLineSide = lineSide(p1, p2, ray.start);
+		var endLineSide = lineSide(p1, p2, ray.end);
+
+		/* If a ray starts on the shape, should this be considered an intersection?
+		 * This may be bad for ray "coming from" some rectangle
+		 */
+		if (startLineSide == LineSideEnum.ON_LINE){
+			return {"t" : 0.0};
+		} else if (endLineSide == LineSideEnum.ON_LINE){
+			return {"t" : 1.0};
+		}
+
+		if (startLineSide != endLineSide){
+			// from http://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
+
+			var x1y2 = (p1.x * p2.y);
+			var y1x2 = (p1.y * p2.x);
+			var x3minusX4 = (ray.start.x - ray.end.x);
+			var x1minusX2 = (p1.x - p2.x);
+			var x3y4 = (ray.start.x * ray.end.y);
+			var y3x4 = (ray.start.y * ray.end.x);
+			var y3minusY4 = (ray.start.y - ray.end.y);
+			var y1minusY2 = (ray.start.y - ray.end.y);
+
+			var denom = (x1minusX2 * y3minusY4) - (y1minusY2 * x3minusX4);
+
+			// If they're parallel, avoid div by zero
+			if (denom != 0){
+				var x1y2minusY1x2 = (x1y2 - y1x2);
+				var x3y4minusY3x4 = (x3y4 - y3x4);
+
+				var xNumerator = (x1y2minusY1x2 * x3minusX4) - (x1minusX2 * x3y4minusY3x4);
+				var yNumerator = (x1y2minusY1x2 * y3minusY4) - (y1minusY2 * x3y4minusY3x4);
+
+				var x = xNumerator/denom;
+				var y = yNumerator/denom;
+
+				if (vertical){
+					if (y > min(p1.y, p2.y) && y < max(p1.y, p2.y)){
+						var progress = ray.pointToProgress({"x": x, "y": y});
+						return {"t": progress};
+					}
+				} else {
+					if (x > min(p1.x, p2.x) && x < max(p1.x, p2.x)){
+						var progress = ray.pointToProgress({"x": x, "y": y});
+						return {"t": progress};
+					}
+				}
+			}
+		}
+		vertical = !vertical;
+	}
+	return null;
+}
+
 /* Ray vs Rectangle
  * INPUT: ray as above, rectangle as above.
  * RETURN VALUE:
@@ -236,25 +339,21 @@ function rayCircle(r, c) {
  *  {t:} if intersection
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
-function rayRectangle(r, b) {
+function rayRectangle(ray, box) {
 	// Don't do unneccessary math if the ray is not possibly intersecting
-	var maxY = max(ray.start.y, ray.end.y);
-	if (maxY < b.min.y) return null;
+	
+	if (allPointsOnOneSideOfBoundingBox(ray, box)){
+		return null;
+	}
 
-	var minY = min(ray.start.y, ray.end.y);
-	if (minY > b.max.y) return null;
+	var bl = box.min;
+	var tr = box.max;
+	var tl = {"x": bl.x, "y": tr.y};
+	var br = {"x": tr.x, "y": bl.y};
 
-	var maxX = max(ray.start.x, ray.end.x);
-	if (maxX < b.min.x) return null;
-
-	var minX = min(ray.start.x, ray.end.x);
-	if (minX > b.max.x) return null;
-
-
-	//TODO
-	return null;
-
-	return {"t": t};
+	var points = [bl, br, tr, tl];
+	
+	return findRayIntersectPoly(points);
 }
 
 /* Ray vs Convex
@@ -264,9 +363,17 @@ function rayRectangle(r, b) {
  *  {t:} if intersection
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
-function rayConvex(r, p) {
-	//TODO
-	return null;
+function rayConvex(ray, poly) {
+	/* cacheing said bounding box within the poly object would help 
+	 * reduce computation considerably
+	 */
+	var boundingBox = getBoundingBox(poly);
+
+	if (allPointsOnOneSideOfBoundingBox(ray, boundingBox)){
+		return null;
+	}
+
+	return findRayIntersectPoly(poly);
 }
 
 

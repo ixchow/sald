@@ -181,17 +181,16 @@ function rayCircle(r, c) {
 
 	var delta = b * b - (4 * a * c);
 
+	var progress = null;
+
 	// Check how many points of intersection there are
-	if (delta < 0){
-		// 0 intersections
-		return null;
-	} else if (delta == 0){ 
+	if (delta == 0){ 
 		// 1 intersection
 		var u = -b / (2 * a);
 		var point = start.plus(rayVector.timesScalar(u));
 
-		return r.xToProgress(point.x);
-	} else {
+		progress = r.xToProgress(point.x);
+	} else if (delta > 0){
 		// 2 intersections
 		squareRootDelta = sqrt(delta);
 
@@ -200,11 +199,18 @@ function rayCircle(r, c) {
 
 		var point = start.plus(rayVector.timesScalar(u1));
 
-		return r.xToProgress(point.x);
+		progress = r.xToProgress(point.x);
+	}
+
+	if (progress == null) {
+		// There were 0 intersections
+		return null;
+	} else {
+		return {"t" : progress};
 	}
 }
 
-/* Rav vs Rectangle
+/* Ray vs Rectangle
  * INPUT: ray as above, rectangle as above.
  * RETURN VALUE:
  *  null if no intersection
@@ -214,9 +220,11 @@ function rayCircle(r, c) {
 function rayRectangle(r, b) {
 	//TODO
 	return null;
+
+	return {"t": t};
 }
 
-/* Rav vs Convex
+/* Ray vs Convex
  * INPUT: ray as above, convex polygon as above.
  * RETURN VALUE:
  *  null if no intersection

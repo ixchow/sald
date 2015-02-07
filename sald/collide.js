@@ -75,7 +75,7 @@ function lineSide(p1, p2, point){
 	var x1 = p2.x - p1.x;
 	var y1 = p2.y - p1.y;
 
-	var normal = {"x": -y1, "y": x};
+	var normal = {"x": -y1, "y": x1};
 
 	var x2 = point.x - p1.x;
 	var y2 = point.y - p1.y;
@@ -121,7 +121,7 @@ function rectangleRectangle(r1, r2) {
 	var minY = Math.max(r1.min.y, r2.min.y);
 
 	var maxX = Math.min(r1.max.x, r2.max.x);
-	var maxY = Math.min(r1.max.x, r2.max.x);
+	var maxY = Math.min(r1.max.y, r2.max.y);
 
 	var x = maxX - minX;
 	var y = maxY - minY;

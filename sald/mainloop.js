@@ -7,7 +7,9 @@ window.sald.scene = {}; //the current scene; update, draw, scrollWheel,  and key
 window.sald.ctx = null; //the drawing context, call canvas 2d functions here
 window.sald.size = {x:320, y:240, mode:"exact"}; //set your desired size here
 window.sald.keys = {}; //all keys currently held down
-window.sald.mouseCoords = {x:null, y:null};
+window.sald.mouseButtons = {}; //all mouse buttons currently held down
+window.sald.mouse = null;
+window.sald.takeRightClickInput = true;
 
 window.sald.keyCode = {
 	"BACKSPACE": 8,
@@ -154,9 +156,11 @@ function start(canvas) {
 
 		if (typeof(sald.size.mode) === "undefined" || sald.size.mode === "exact") {
 			factor = 1;
-
 		} else if (sald.size.mode === "multiple") {
 			factor = Math.floor(Math.min(maxSize.width / sald.size.x, maxSize.height / sald.size.y)) | 0;
+			factor = Math.max(1, factor);
+		} else if (sald.size.mode === "ratio") {
+			factor = Math.min(maxSize.width / sald.size.x, maxSize.height / sald.size.y);
 			factor = Math.max(1, factor);
 		}
 
@@ -176,7 +180,7 @@ function start(canvas) {
 
 			//store the information into the drawing context for other code:
 			sald.ctx.width = width;
-			sald.ctx.hight = height;
+			sald.ctx.height = height;
 			sald.ctx.factor = factor;
 		}
 	}
@@ -209,14 +213,25 @@ function start(canvas) {
 	window.addEventListener('keydown', function(evt){
 		var keyString =  window.sald.keyCodeToString(evt.keyCode);
 
+		var keydownsToIgnorePreventingDefault = {
+			 "WINDOWS" : true,
+			 "CONTROL" : true
+			};
+
 		if (sald.keys[keyString]) {
 			//already handled this keydown
 		} else {
 			sald.keys[keyString] = true;
-			
 			sald.scene && sald.scene.key && sald.scene.key(evt.keyCode, true);
 		}
-		evt.preventDefault();
+
+		// TODO figure out which keys to prevent default, and when
+		if (!(keyString in keydownsToIgnorePreventingDefault)){
+			if (!(("WINDOWS" in sald.keys && sald.keys["WINDOWS"]) ||
+					"CONTROL" in sald.keys && sald.keys["CONTROL"])){
+				evt.preventDefault();
+			}
+		}
 		return false;
 	});
 	
@@ -226,92 +241,130 @@ function start(canvas) {
 		delete sald.keys[keyString];
 		
 		sald.scene && sald.scene.key && sald.scene.key(evt.keyCode, false);
+		
+		// TODO figure out which keys to prevent default, and when
 		evt.preventDefault();
 		return false;
 	});
 	
-	var getMousePos = function() {
-		var xPos = MouseEvent.clientX;
-		var yPos = MouseEvent.clientY;
-	
-		window.sald.mouseCoords = {x: xPos, y: yPos};
-		return window.sald.mouseCoords;
-	};
-	
-	canvas.addEventListener('onmousedown', function () {
-		window.onmousedown();
-        
-        if(window.MouseEvent.button === 0)
-        {
-            sald.scene && sald.scene.onLeftMouseDown && sald.scene.onLeftMouseDown();
-        }
-        else if(window.MouseEvent.button === 2)
-        {
-            sald.scene && sald.scene.onRightMouseDown && sald.scene.onRightMouseDown();
-        }
+	// Right click
+	canvas.addEventListener('contextmenu', function(ev) {
+		if (window.sald.takeRightClickInput){
+	    	ev.preventDefault();
+		}
 
-		var temp = window.sald.mouseCoords;
-		return temp;
-	});
-	
-	canvas.addEventListener('onmouseup', function () {
-		window.onmouseup();
-        
-        if(window.MouseEvent.button === 0)
-        {
-            sald.scene && sald.scene.onLeftMouseUp && sald.scene.onLeftMouseUp();
-        }
-        else if(window.MouseEvent.button === 2)
-        {
-            sald.scene && sald.scene.onRightMouseUp && sald.scene.onRightMouseUp();
-        }
+	    return !window.sald.takeRightClickInput;
+	}, !window.sald.takeRightClickInput);
 
-		var temp = window.sald.mouseCoords;
-		return temp;
-	});
-	
-	canvas.addEventListener('onclick', function () {
-		window.onclick();
-        
-        if(window.MouseEvent.button === 0)
-        {
-            sald.scene && sald.scene.leftMouseClick && sald.scene.leftMouseClick();
-        }
-        else if(window.MouseEvent.button === 2)
-        {
-            sald.scene && sald.scene.rightMouseClick && sald.scene.rightMouseClick();
-        }
+	function getClickType(e){
+		var evt = (e == null ? event : e);
 
-		var temp = window.sald.mouseCoords;
-		return temp;
-	});
-	
-	canvas.addEventListener('onmousemove', function () {
-		window.onmousemove();
+		var clickType = 'LEFT';
 
-		getMousePos();
+		if (evt.which){
+			if (evt.which == 3){
+				clickType = 'RIGHT';
+			} else if (evt.which == 2){
+				clickType = 'MIDDLE';
+			}
+		} else if (evt.button) {
+			if (evt.button == 2) {
+				clickType = 'RIGHT';
+			} else {
+				clickType = 'MIDDLE';
+			}
+		}
+
+		return clickType;
+	}
+
+	window.onmouseup = function (e) {
+		
+		var clickType = getClickType(e);
+		var skipEvent = false;
+
+		if (clickType === "RIGHT" && !window.sald.takeRightClickInput){
+			skipEvent = true;
+		}
+
+		if (!skipEvent){
+			delete sald.mouseButtons[clickType];
+			sald.scene && sald.scene.mousePress && sald.scene.mousePress(sald.mouse, clickType, false);
+		}
+
+		// TODO figure out which keys to prevent default, and when
+		// evt.preventDefault();
+		return false;
+	}
+
+	canvas.onmousedown = function(e) {
+		
+		var clickType = getClickType(e);
+		var skipEvent = false;
+
+		if (clickType === "RIGHT" && !window.sald.takeRightClickInput){
+			skipEvent = true;
+		}
+
+		if (!skipEvent){
+			if (sald.mouseButtons[clickType]) {
+				//already handled this keydown
+			} else {
+				sald.mouseButtons[clickType] = true;
+				sald.scene && sald.scene.mousePress && sald.scene.mousePress(sald.mouse, clickType, true);
+			}
+		}
+
+		// TODO figure out which keys to prevent default, and when
+		// evt.preventDefault();
+		return false;
+	}
+	
+	window.addEventListener('mousemove', function (evt) {
+		var rect = canvas.getBoundingClientRect();
+
+		//The '0.5' additions here seem to align a '+' drawn at the cursor
+		//  position to the cursor better, but I'm not sure why:
+		var x = (evt.clientX + 0.5 - rect.left);
+		var y = (evt.clientY + 0.5 - rect.top);
+
+		sald.mouse = {x:x, y:y};
+
+		evt.preventDefault();
 
 		sald.scene && sald.scene.onMouseMove && sald.scene.onMouseMove();
+
+		return false;		
 	});
 	
-	if(canvas.addEventListener){
+	if (canvas.addEventListener){
 		//chrome/ie9/safari/opera
 		canvas.addEventListener("mousewheel", mouseWheel, false);
 		//firefox
 		canvas.addEventListener("DOMMouseScroll", mouseWheel, false);
-	}
-	else{
+	} else {
 		canvas.attachEvent("onmousewheel", mouseWheel);
 	}
+
 	function mouseWheel(e){
 		var e = window.event || e;
 		//1 for up, -1 for down
-		var delta =  Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-		sald.scene && sald.scene.scrollWheel && sald.scene.scrollWheel(delta);
+		var delta;
+
+		if ('wheelDelta' in e){
+			delta = event.wheelDelta;
+		} else { // Firefox
+			delta = -40 * event.detail;
+		}
+
+		if (sald.scene && sald.scene.scrollWheel){
+			sald.scene.scrollWheel(delta);
+			e.preventDefault();
+		}
+		
 		return false;
 	};
 	window.requestAnimationFrame(render);
-
 };
 
 

@@ -288,8 +288,10 @@ function start(canvas) {
 		}
 
 		if (!skipEvent){
-			delete sald.mouseButtons[clickType];
-			sald.scene && sald.scene.mousePress && sald.scene.mousePress(sald.mouse, clickType, false);
+			if (clickType in sald.mouseButtons && sald.mouseButtons[clickType]){
+				delete sald.mouseButtons[clickType];
+				sald.scene && sald.scene.mousePress && sald.scene.mousePress(sald.mouse, clickType, false);
+			}
 		}
 
 		// TODO figure out which keys to prevent default, and when
@@ -332,7 +334,7 @@ function start(canvas) {
 
 		evt.preventDefault();
 
-		sald.scene && sald.scene.onMouseMove && sald.scene.onMouseMove();
+		sald.scene && sald.scene.onMouseMove && sald.scene.onMouseMove(sald.mouse);
 
 		return false;		
 	});

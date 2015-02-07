@@ -146,11 +146,7 @@ key(int keyCode, boolean isPressed)
 onMouseMove({x, y})
 
 mousePress({x, y}, string clickType, boolean isDown)
-
 where clickType is either "LEFT", "RIGHT", or "MIDDLE"
-
-// delta is either -1 or 1, scrolling up or down
-scrollWheel(delta)
 
 
 window.sald.scene can be switched out to accomodate multiple scenes/views/levels in a game.

@@ -1,82 +1,81 @@
 // Convex polygons are defined as CCW list of point, therefore
 // use right hand rule to determine whether you're "inside" or "outside"
-public class LineSideEnum {
-	private LineSideEnum() {}
-	public static final LineSideEnum ON_LINE = new LineSideEnum();
-	public static final LineSideEnum INSIDE = new LineSideEnum();
-	public static final LineSideEnum OUTSIDE = new LineSideEnum();
+function LineSideEnum() {
+	this.ON_LINE = new LineSideEnum();
+	this.INSIDE = new LineSideEnum();
+	this.OUTSIDE = new LineSideEnum();
 }
 
 function dotProduct(v1, v2){
 	return (v1.x * v2.x) + (v1.y * v2.y);
 }
 
-public class Ray{
-	var start, end;
+// Ray Class
 
-	public Ray(_start, _end){
-		start = _start;
-		end = _end;
+function Ray(start, end){
+	this.start = new Vector(start.x, start.y);
+	this.end = new Vector(end.x, end.y);
+}
+
+Ray.prototype.isMoreVertical = function() {
+	return Math.abs(this.end.x - this.start.x) < Math.abs(this.end.y - this.start.y);
+}
+
+/* Given an input (x,y) value, return a value between 0.0 and 1.0 
+ * if the x would lie on the ray, use y if the line is near vertical
+ * return null otherwise.
+ * 
+ * DO NOT USE to check whether point is precisely on ray, but rather where
+ * along the ray is closest should it be near the ray
+ */
+Ray.prototype.pointToProgress = function(point){
+	var x = point.x;
+	var y = point.y;
+
+	if (y < Math.min(this.start.y, this.end.y) || y > Math.max(this.end.y, this.start.y)){
+		return null;
+	}
+	if (x < Math.min(this.start.x, this.end.x) || x > Math.max(this.end.x, this.start.x)){
+		return null;
 	}
 
-	public function isMoreVertical(){
-		return abs(end.x - start.x) < abs(end.y - start.y);
-	}
+	if (this.isMoreVertical()){
+		var cY = (y - this.start.y);
+		var endY = this.end.y - this.start.y;
 
-	/* Given an input (x,y) value, return a value between 0.0 and 1.0 
-	 * if the x would lie on the ray, use y if the line is near vertical
-	 * return null otherwise.
-	 * 
-	 * DO NOT USE to check whether point is precisely on ray, but rather where
-	 * along the ray is closest should it be near the ray
-	 */
-	public function pointToProgress(point){
-		var x = point.x;
-		var y = point.y;
+		return cY / endY;
+	} else {
+		var cX = (x - this.start.x);
+		var endX = this.end.x - this.start.x;
 
-		if (y < start.y || y > end.y) return null;
-		if (x < start.x || x > end.x) return null;
-
-		if (isMoreVertical()){
-			var cY = (y - start.y);
-			var endY = end.y - start.y;
-
-			return cY / endY;
-		} else {
-			var cX = (x - start.x);
-			var endX = end.x - start.x;
-
-			return cx / endX;
-		}
+		return cx / endX;
 	}
 }
 
-public class Vector{
-	var x, y;
+// Vector Class
 
-	public Vector(_x, _y){
-		x = _x;
-		y = _y;
-	}
+function Vector(x, y){
+	this.x = x;
+	this.y = y;
+}
 
-	public function plus(v){
-		return {"x": x + v.x, "y": y + v.y};
-	}
+Vector.prototype.plus = function(v){
+	return {"x": this.x + v.x, "y": this.y + v.y};
+}
 
-	public function minus(v){
-		return {"x": x - v.x, "y": y - v.y};
-	}
+Vector.prototype.minus = function(v){
+	return {"x": this.x - v.x, "y": this.y - v.y};
+}
 
-	public function timesScalar(scalar){
-		return {"x": scalar * x, "y": scalar * y};
-	}
+Vector.prototype.timesScalar = function(scalar){
+	return {"x": scalar * this.x, "y": scalar * this.y};
 }
 
 function lineSide(p1, p2, point){
 	var x1 = p2.x - p1.x;
 	var y1 = p2.y - p1.y;
 
-	var normal = {x: -y1; y: x;};
+	var normal = {"x": -y1, "y": x};
 
 	var x2 = point.x - p1.x;
 	var y2 = point.y - p1.y;
@@ -104,8 +103,9 @@ function lineSide(p1, p2, point){
 function circleCircle(c1,c2) {
 	var a = (c1.x - c2.x);
 	var b = (c1.y - c2.y);
+	var dist = c1.r + c2.r;
 
-	return ((a * a) + (b * b)) < (r * r);
+	return ((a * a) + (b * b)) < (dist * dist);
 }
 
 /* Rectangle vs Rectangle
@@ -117,11 +117,11 @@ function circleCircle(c1,c2) {
  */
 function rectangleRectangle(r1, r2) {
 	
-	var minX = max(r1.min.x, r2.min.x);
-	var minY = max(r1.min.y, r2.min.y);
+	var minX = Math.max(r1.min.x, r2.min.x);
+	var minY = Math.max(r1.min.y, r2.min.y);
 
-	var maxX = min(r1.max.x, r2.max.x);
-	var maxY = min(r1.max.x, r2.max.x);
+	var maxX = Math.min(r1.max.x, r2.max.x);
+	var maxY = Math.min(r1.max.x, r2.max.x);
 
 	var x = maxX - minX;
 	var y = maxY - minY;
@@ -151,7 +151,7 @@ function convexConvex(p1, p2) {
 		/* For each edge on shape p2, check if each j in p1 is on the 
 		 * outside-side of of the polygon p2. 
 		 */
-		for (int j = 0; j < p1.length; j++){
+		for (var j = 0; j < p1.length; j++){
 			var side = lineSide(a, b, point);
 
 			if (side == LineSideEnum.INSIDE){
@@ -182,41 +182,49 @@ function convexConvex(p1, p2) {
  *  {t:} if intersection
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
-function rayCircle(r, c) {
-	var start = new Vector(r.start.x - c.x, r.start.y - c.y);
-	var end = new Vector(r.end.x - c.x, r.end.y - c.y);
+function rayCircle(ray, c) {
+	// If ray starts in the circle
+	if (circleCircle({"x" : ray.start.x, "y" : ray.start.y, "r" : 0}, c)){
+		return {"t" : 0.0};
+	}
 
-	var rayVector = new Vector(end.x - start.x, end.y - start.y);
+	var r = new Ray(ray.start, ray.end);
 
-	var radius = c.radius;
+	var localStart = new Vector(r.start.x - c.x, r.start.y - c.y);
+	var localEnd = new Vector(r.end.x - c.x, r.end.y - c.y);
+
+	var localRayVector = new Vector(localEnd.x - localStart.x, localEnd.y - localStart.y);
+
+	var radius = c.r;
 
 	// Quadratic Formula
 
 	// TODO cull points that are not going to lead anywhere
 
-	var a = (rayVector.x * rayVector.x) + (rayVector.y * rayVector.y);
-	var b = 2 * ((rayVector.x * start.x) + (rayVector.y * start.y));
-	var c = (start.x * start.x) + (start.y * start.y) - (radius * radius);
+	var a = (localRayVector.x * localRayVector.x) + (localRayVector.y * localRayVector.y);
+	var b = 2 * ((localRayVector.x * localStart.x) + (localRayVector.y * localStart.y));
+	var c = (localStart.x * localStart.x) + (localStart.y * localStart.y) - (radius * radius);
 
-	var delta = b * b - (4 * a * c);
+	var delta = (b * b) - (4 * a * c);
 
 	var progress = null;
+	var p1 = r.start;
 
 	// Check how many points of intersection there are
 	if (delta == 0){ 
 		// 1 intersection
 		var u = -b / (2 * a);
-		var point = start.plus(rayVector.timesScalar(u));
+		var point = p1.plus(localRayVector.timesScalar(u));
 
 		progress = r.pointToProgress(point);
 	} else if (delta > 0){
 		// 2 intersections
-		squareRootDelta = sqrt(delta);
+		squareRootDelta = Math.sqrt(delta);
 
-		var u1 = (-b + squareRootDelta) / (2 * a);
-		// var u2 = (-b - squareRootDelta) / (2.0 * a);
-
-		var point = start.plus(rayVector.timesScalar(u1));
+		//var u1 = (-b + squareRootDelta) / (2 * a);
+		var u2 = (-b - squareRootDelta) / (2.0 * a);
+		
+		var point = p1.plus(localRayVector.timesScalar(u2));
 
 		progress = r.pointToProgress(point);
 	}
@@ -230,16 +238,16 @@ function rayCircle(r, c) {
 }
 
 function allPointsOnOneSideOfBoundingBox(ray, box){
-	var maxY = max(ray.start.y, ray.end.y);
+	var maxY = Math.max(ray.start.y, ray.end.y);
 	if (maxY < box.min.y) return true;
 
-	var minY = min(ray.start.y, ray.end.y);
+	var minY = Math.min(ray.start.y, ray.end.y);
 	if (minY > box.max.y) return true;
 
-	var maxX = max(ray.start.x, ray.end.x);
+	var maxX = Math.max(ray.start.x, ray.end.x);
 	if (maxX < box.min.x) return true;
 
-	var minX = min(ray.start.x, ray.end.x);
+	var minX = Math.min(ray.start.x, ray.end.x);
 	if (minX > box.max.x) return true;
 
 	return false;
@@ -251,13 +259,13 @@ function getBoundingBox(poly){
 	var maxX = Number.MIN_VALUE;
 	var maxY = Number.MIN_VALUE;
 
-	for (int i = 0; i < poly.length; i++){
+	for (var i = 0; i < poly.length; i++){
 		var point = poly[i];
 
-		minX = min(point.x, minX);
-		minY = min(point.y, minY);
-		maxX = max(point.x, maxX);
-		maxY = max(point.y, maxY);
+		minX = Math.min(point.x, minX);
+		minY = Math.min(point.y, minY);
+		maxX = Math.max(point.x, maxX);
+		maxY = Math.max(point.y, maxY);
 	}
 
 	var minP = {"x": minX, "y": minY};
@@ -266,13 +274,13 @@ function getBoundingBox(poly){
 	return {"min": minP, "max": maxP};
 }
 
-function findRayIntersectPoly(points){
+function findRayIntersectPoly(ray, points){
 	var numPoints = points.length;
 
-	boolean vertical = false;
+	var vertical = false;
 
-	for (int i = 0; i < numPoints; i++){
-		int iNext = (i+1) % numPoints;
+	for (var i = 0; i < numPoints; i++){
+		var iNext = (i+1) % numPoints;
 
 		var p1 = points[i];
 		var p2 = points[iNext];
@@ -315,12 +323,12 @@ function findRayIntersectPoly(points){
 				var y = yNumerator/denom;
 
 				if (vertical){
-					if (y > min(p1.y, p2.y) && y < max(p1.y, p2.y)){
+					if (y > Math.min(p1.y, p2.y) && y < Math.max(p1.y, p2.y)){
 						var progress = ray.pointToProgress({"x": x, "y": y});
 						return {"t": progress};
 					}
 				} else {
-					if (x > min(p1.x, p2.x) && x < max(p1.x, p2.x)){
+					if (x > Math.min(p1.x, p2.x) && x < Math.max(p1.x, p2.x)){
 						var progress = ray.pointToProgress({"x": x, "y": y});
 						return {"t": progress};
 					}
@@ -353,7 +361,7 @@ function rayRectangle(ray, box) {
 
 	var points = [bl, br, tr, tl];
 	
-	return findRayIntersectPoly(points);
+	return findRayIntersectPoly(ray, points);
 }
 
 /* Ray vs Convex
@@ -373,7 +381,7 @@ function rayConvex(ray, poly) {
 		return null;
 	}
 
-	return findRayIntersectPoly(poly);
+	return findRayIntersectPoly(ray, poly);
 }
 
 

@@ -1,10 +1,12 @@
 // Convex polygons are defined as CCW list of point, therefore
 // use right hand rule to determine whether you're "inside" or "outside"
-function LineSideEnum() {
-	this.ON_LINE = new LineSideEnum();
-	this.INSIDE = new LineSideEnum();
-	this.OUTSIDE = new LineSideEnum();
+function LineSideEnumDef() {
+	this.ON_LINE = 0;
+	this.INSIDE = 1;
+	this.OUTSIDE = 2;
 }
+
+var LineSideEnum = new LineSideEnumDef();
 
 function dotProduct(v1, v2){
 	return (v1.x * v2.x) + (v1.y * v2.y);
@@ -48,7 +50,7 @@ Ray.prototype.pointToProgress = function(point){
 		var cX = (x - this.start.x);
 		var endX = this.end.x - this.start.x;
 
-		return cx / endX;
+		return cX / endX;
 	}
 }
 
@@ -87,9 +89,9 @@ function lineSide(p1, p2, point){
 	if (dotProd == 0.0){
 		return LineSideEnum.ON_LINE;
 	} else if (dotProd < 0.0){
-		return LineSideEnum.INSIDE;
-	} else {
 		return LineSideEnum.OUTSIDE;
+	} else {
+		return LineSideEnum.INSIDE;
 	}
 }
 
@@ -126,22 +128,12 @@ function rectangleRectangle(r1, r2) {
 	var x = maxX - minX;
 	var y = maxY - minY;
 
-	return (x * y) > 0;
+	return (x > 0 && y > 0);
 }
 
-/* Convex vs Convex
- * INPUT: convex polygons as lists of vertices in CCW order
- *  p = [{x:,y:}, ..., {x:, y:}]
- * RETURN VALUE:
- *  false if p1 and p2 do not intersect
- *  true if p1 and p2 do intersect
- */
-function convexConvex(p1, p2) {
-
-	/* Loop through each edge in polygon p2
-	 */
+function performConvexConvex(p1, p2){
 	for (var i = 0; i < p2.length; i++){
-		var iNext = i + 1 % p2.length;
+		var iNext = (i + 1) % p2.length;
 
 		var a = p2[i];
 		var b = p2[iNext];
@@ -151,11 +143,13 @@ function convexConvex(p1, p2) {
 		/* For each edge on shape p2, check if each j in p1 is on the 
 		 * outside-side of of the polygon p2. 
 		 */
+		
 		for (var j = 0; j < p1.length; j++){
+			var point =  p1[j];
 			var side = lineSide(a, b, point);
 
-			if (side == LineSideEnum.INSIDE){
-				netSide = LineSideEnum.INSIDE;
+			if (side != LineSideEnum.OUTSIDE){
+				netSide = side;
 				break;
 			}
 		}
@@ -168,10 +162,28 @@ function convexConvex(p1, p2) {
 		}
 	}
 
+	return true;
+}
+
+/* Convex vs Convex
+ * INPUT: convex polygons as lists of vertices in CCW order
+ *  p = [{x:,y:}, ..., {x:, y:}]
+ * RETURN VALUE:
+ *  false if p1 and p2 do not intersect
+ *  true if p1 and p2 do intersect
+ */
+function convexConvex(p1, p2) {
+
+	if (p1.length > p2.length) return convexConvex(p2, p1);
+
+	if (!performConvexConvex(p1, p2)){
+		return false;
+	}
+
 	/* If there is no clear separation axis between convex p1 and convex p2,
 	 * then the two shapes must be intersecting.
 	 */
-	return true;
+	return performConvexConvex(p2, p1);
 }
 
 /* Ray vs Circle
@@ -221,10 +233,9 @@ function rayCircle(ray, c) {
 		// 2 intersections
 		squareRootDelta = Math.sqrt(delta);
 
-		//var u1 = (-b + squareRootDelta) / (2 * a);
-		var u2 = (-b - squareRootDelta) / (2.0 * a);
+		var u = (-b - squareRootDelta) / (2.0 * a);
 		
-		var point = p1.plus(localRayVector.timesScalar(u2));
+		var point = p1.plus(localRayVector.timesScalar(u));
 
 		progress = r.pointToProgress(point);
 	}
@@ -274,28 +285,21 @@ function getBoundingBox(poly){
 	return {"min": minP, "max": maxP};
 }
 
-function findRayIntersectPoly(ray, points){
+function findRayIntersectPoly(r, points){
+	var ray = new Ray(r.start, r.end);
+
 	var numPoints = points.length;
 
-	var vertical = false;
+	var progress = null;
 
 	for (var i = 0; i < numPoints; i++){
-		var iNext = (i+1) % numPoints;
+		var iNext = (i + 1) % numPoints;
 
 		var p1 = points[i];
 		var p2 = points[iNext];
 
 		var startLineSide = lineSide(p1, p2, ray.start);
 		var endLineSide = lineSide(p1, p2, ray.end);
-
-		/* If a ray starts on the shape, should this be considered an intersection?
-		 * This may be bad for ray "coming from" some rectangle
-		 */
-		if (startLineSide == LineSideEnum.ON_LINE){
-			return {"t" : 0.0};
-		} else if (endLineSide == LineSideEnum.ON_LINE){
-			return {"t" : 1.0};
-		}
 
 		if (startLineSide != endLineSide){
 			// from http://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
@@ -307,7 +311,7 @@ function findRayIntersectPoly(ray, points){
 			var x3y4 = (ray.start.x * ray.end.y);
 			var y3x4 = (ray.start.y * ray.end.x);
 			var y3minusY4 = (ray.start.y - ray.end.y);
-			var y1minusY2 = (ray.start.y - ray.end.y);
+			var y1minusY2 = (p1.y - p2.y);
 
 			var denom = (x1minusX2 * y3minusY4) - (y1minusY2 * x3minusX4);
 
@@ -322,22 +326,59 @@ function findRayIntersectPoly(ray, points){
 				var x = xNumerator/denom;
 				var y = yNumerator/denom;
 
-				if (vertical){
+				var currentEdge = new Ray(p1, p2);
+
+				if (currentEdge.isMoreVertical()){
 					if (y > Math.min(p1.y, p2.y) && y < Math.max(p1.y, p2.y)){
-						var progress = ray.pointToProgress({"x": x, "y": y});
-						return {"t": progress};
+						
+						var t = ray.pointToProgress({"x": x, "y": y});
+
+						if (t != null){
+							if (progress != null){
+								if (progress.t > t){
+									progress = {"t": t};
+								}
+							} else {
+								progress = {"t": t};
+							}
+						}
 					}
 				} else {
 					if (x > Math.min(p1.x, p2.x) && x < Math.max(p1.x, p2.x)){
-						var progress = ray.pointToProgress({"x": x, "y": y});
-						return {"t": progress};
+
+						var t = ray.pointToProgress({"x": x, "y": y});
+
+						if (t != null){
+							if (progress != null){
+								if (progress.t > t){
+									progress = {"t": t};
+								}
+							} else {
+								progress = {"t": t};
+							}
+						}
 					}
 				}
 			}
 		}
-		vertical = !vertical;
 	}
-	return null;
+
+	return progress;
+}
+
+function pointInPoly(point, poly){
+	for (var i = 0; i < poly.length; i++){
+		var iNext = (i + 1) % poly.length;
+
+		var p1 = poly[i];
+		var p2 = poly[iNext];
+
+		if (lineSide(p1, p2, point) == LineSideEnum.OUTSIDE){
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /* Ray vs Rectangle
@@ -360,6 +401,10 @@ function rayRectangle(ray, box) {
 	var br = {"x": tr.x, "y": bl.y};
 
 	var points = [bl, br, tr, tl];
+
+	if (pointInPoly(ray.start, points)){
+		return {"t" : 0.0};
+	}
 	
 	return findRayIntersectPoly(ray, points);
 }
@@ -379,6 +424,10 @@ function rayConvex(ray, poly) {
 
 	if (allPointsOnOneSideOfBoundingBox(ray, boundingBox)){
 		return null;
+	}
+
+	if (pointInPoly(ray.start, poly)){
+		return {"t" : 0.0};
 	}
 
 	return findRayIntersectPoly(ray, poly);

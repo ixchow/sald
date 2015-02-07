@@ -129,8 +129,8 @@ The custom scrollwheel function should be defined as follows:
 
 function scrollWheel(delta){
 //delta defines direction mouse scrolled
-//delta = 1 if mouse scrolled up
-//delta = -1 if mouse scrolled down
+//delta > 0 if mouse scrolled up
+//delta < 0 if mouse scrolled down
 }
 window.sald.scene.scrollWheel = scrollWheel;
 ```
@@ -143,15 +143,11 @@ draw()
 
 key(int keyCode, boolean isPressed)
 
-onMouseMove()
+onMouseMove({x, y})
 
-leftMouseDown()
-leftMouseUp()
-leftMouseClick()
+mousePress({x, y}, string clickType, boolean isDown)
 
-rightMouseDown()
-rightMouseUp()
-rightMouseClick()
+where clickType is either "LEFT", "RIGHT", or "MIDDLE"
 
 // delta is either -1 or 1, scrolling up or down
 scrollWheel(delta)

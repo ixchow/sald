@@ -100,19 +100,27 @@ The mainloop module uses the following properties in the `sald` namespace:
 
 `sald.size` configures the desired canvas size and resizing behavior:
 
+If `mode` is not specified, or is `"exact"`, size is set exactly in pixels:
 ```
-//If mode is not specified, or is exact, size is set exactly in pixels:
 sald.size = {x:320, y:240}; 
 sald.size = {x:320, y:240, mode:"exact"};
-//If mode is "multiple", canvas size will be an integer multiple of the given size:
-// (good for pixel-art games, or games that want an exact aspect ratio)
+```
+
+If `mode` is `"multiple"`, canvas size will be an integer multiple of the given size.
+This is good for pixel-art games, or games that want an exact aspect ratio:
+```
 sald.size = {x:320, y:240, mode:"multiple"}; //pixel art game with 320x240 canvas
 sald.size = {x:16, y:9, mode:"multiple"}; //game wants to be exactly 16x9 aspect
-//If mode is "ratio", canvas size will be an rounded, non-integer multiple of the size:
-// (for games that don't care about exact ratio)
+```
+
+If `mode` is `"ratio"`, canvas size will be an rounded, non-integer multiple of the size.
+This is good for games that just want an approximate aspect ratio:
+```
 sald.size = {x:1, y:1, mode:"ratio"}; //square canvas
 sald.size = {x:16, y:9, mode:"ratio"}; //16x9-ish, might not be exact due to rounding
 ```
+
+<hr />
 
 `sald.ctx` is the drawing context associated with the canvas. SALD adds some extra properties:
 
@@ -149,6 +157,8 @@ function update(elapsed) {
 }
 ```
 
+<hr />
+
 `sald.mouse` contains the position (in pixels from the upper-left corner of the canvas) and held-down buttons for the mouse. NOTE: `mouse === null` if no mouse events have happened yet.
 ```
 function update(elapsed) {
@@ -182,6 +192,8 @@ function draw(){
 sald.scene.draw = draw;
 ```
 
+<hr />
+
 The `sald.scene.key` function is called every time a key is pressed or released:
 
 ```
@@ -193,7 +205,9 @@ function key(keyName, isPressed){
 
 window.sald.scene.key = key;
 ```
-NOTE: On a Mac, window.sald.keyCode.WINDOWS is the "Command" key.
+NOTE: On a Mac, `sald.keys.WINDOWS` is the "Command" key.
+
+<hr />
 
 The `sald.scene.mouse` function is called whenever a mouse button is pressed or the mouse moves:
 ```
@@ -208,9 +222,11 @@ function mouse(position, buttonName, isPressed) {
 }
 sald.scene.mouse = mouse;
 ```
-NOTE: when mouse is moved, buttonName will be undefined
+NOTE: when the mouse is moved, this function will be called with `buttonName` and `isPressed` undefined.
 
 NOTE 2: `sald.takeRightClickInput` (default: true) can be set to false to allow right click events to open the context menu as expected.
+
+<hr />
 
 The `sald.scene.wheel` function handles scroll wheel events:
 ```

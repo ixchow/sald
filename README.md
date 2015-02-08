@@ -79,3 +79,74 @@ module.exports = {
 ```
 
 This build.js file will translate png and jpg images using loadImage and wav and ogg files using loadAudio.
+
+
+##mainloop.js
+The mainloop module defines the window.sald object, which contains a number of useful functions/objects.
+
+###window.sald.scene
+
+In the scene object, the user can define custom update, draw, and key functions. Update is called on each step of the program's runtime, with draw called immediately after. 
+
+Considering the Model-View-Controller paradigm, the update function should update the model, while the draw function should update the view.
+
+```
+function update(elapsed){
+  // elapsed is a float measure of how many seconds have passed since the last update
+}
+
+window.sald.scene.update = update;
+
+function draw(){
+  // draw whatever should be on the screen
+}
+
+window.sald.scene.draw = draw;
+```
+
+They key function is used for key events, when a key on the keyboard is pressed or released.
+
+The custom key function should be defined as follows:
+
+```
+function key(keyCode, isPressed){
+  // keyCode should be compared to keys values in the window.sald.keyCode object
+  // isPressed is a boolean that can be used to check whether the key was pressed or released
+
+  if (keyCode == window.sald.keyCode.SPACEBAR && isPressed){
+    // have something happen when the spacebar is pressed
+  }
+}
+
+window.sald.scene.key = key;
+
+
+NOTE: On a Mac, window.sald.keyCode.WINDOWS is the "Command" key.
+
+The scrollWheel Function is used for mouse scroll events.
+
+The custom scrollwheel function should be defined as follows:
+
+function scrollWheel(delta){
+//delta defines direction mouse scrolled
+//delta > 0 if mouse scrolled up
+//delta < 0 if mouse scrolled down
+}
+window.sald.scene.scrollWheel = scrollWheel;
+```
+
+
+A full list of functions that a user can define in the sald object are as follows:
+
+update(float elapsedSeconds)
+draw()
+
+key(int keyCode, boolean isPressed)
+
+onMouseMove({x, y})
+
+mousePress({x, y}, string clickType, boolean isDown)
+where clickType is either "LEFT", "RIGHT", or "MIDDLE"
+
+
+window.sald.scene can be switched out to accomodate multiple scenes/views/levels in a game.

@@ -165,7 +165,7 @@ function rayCircle(r, c) {
         if(ts.length == 0) {
             return null;
         } else {
-            return ts.reduce(Math.min);
+            return {t: ts.reduce(Math.min)};
         }
     }
 }
@@ -196,7 +196,7 @@ function rayRectangle(r, b) {
     if(txmin > tymax || tymin > txmax)
         return null;
     else
-        return Math.max(txmin,tymin);
+        return {t: Math.max(txmin,tymin)};
 }
 
 /* Rav vs Convex
@@ -207,8 +207,25 @@ function rayRectangle(r, b) {
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
 function rayConvex(r, p) {
-    //TODO
-    return null;
+    var tmin = Number.NEGATIVE_INFINITY;
+    var tmax = Number.POSITIVE_INFINITY;
+    var length = Math.sqrt(dot2(sub2(r.end,r.start)));
+    
+    for(int i = 0; i < p.length; i++) {
+        var axis = norm2(perp2(sub2(p[i],p[(i+1) % p.length])));
+        var p1 = dot2(r.start,axis);
+        var p2 = dot2(r.end,axis);
+        var pmin = Math.min(p1,p2);
+        var pmax = Math.max(p1,p2);
+
+        tmin = Math.max(pmin / length, tmin);
+        tmax = Math.min(pmax / length, tmax);
+
+        if(tmin < tmax && tmax >= 0 && tmin <= 1)
+            return null;
+    }
+
+    return {t: tmin};
 }
 
 

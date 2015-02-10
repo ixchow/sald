@@ -22,6 +22,15 @@ function sub2(u,v) {
     return {x: u.x - v.x, y: u.y - v.y};
 }
 
+function perp2(v) {
+    return {x: -v.y, y: v.x};
+}
+
+function norm2(v) {
+    var l = Math.sqrt(dot(v,v));
+    return {x: v.x/l, y: v.y/l};
+}
+
 function minDot2(p,d,initial) {
     var i = initial || 0;
     
@@ -42,28 +51,6 @@ function minDot2(p,d,initial) {
     i++;
 
     return {i: i, v: v};
-}
-
-function gjk(p,q) {
-    var initial_axis = {x:0,y:1};
-    var A = sub2(p.start(q.pos), q.start(p.pos));
-    var s = [A];
-    var D = neg2(A);
-    while(true) {
-        A = sub2(p.support(D),q.support(neg2(D));
-        if(dot2(A,D) < 0) {
-            return false;
-        }
-        // s = s + {A}
-        s.push(A);
-        if(s.length > 3) {
-            s.pop();
-        }
-        // nearest simplex
-        
-        // accept if simplex contains origin
-    }
-
 }
 
 /* Circle vs Circle
@@ -157,8 +144,30 @@ function convexConvex(p1, p2) {
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
 function rayCircle(r, c) {
-    //TODO
-    return null;
+    var d = sub2(r.end, r.start);
+    var cp = sub2(r.start,c);
+
+    var a = dot2(d,d);
+    var b = 2*dot2(d,cp);
+    var c = dot2(cp,cp) - c.r*c.r;
+
+    var disc = b*b - 4*a*c;
+    if(disc < 0) {
+        return null;
+    } else {
+        disc = Math.sqrt(disc);
+
+        var ts = [(-b-disc)/(2*a),(-b+disc)/(2*a)];
+        ts = ts.filter(function(t) {
+            return 0 <= t && t <= 1;
+        });
+        
+        if(ts.length == 0) {
+            return null;
+        } else {
+            return ts.reduce(Math.min);
+        }
+    }
 }
 
 /* Rav vs Rectangle
@@ -169,8 +178,25 @@ function rayCircle(r, c) {
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
 function rayRectangle(r, b) {
-    //TODO
-    return null;
+    var e = r.start;
+    var d = sub2(r.end,r.start);
+    var min = sub2(r.min,e);
+    var max = sub2(r.max,e);
+
+    var tx1 = min.x / d.x;
+    var tx2 = max.x / d.x;
+    var ty1 = min.y / d.y;
+    var ty2 = max.y / d.y;
+
+    var txmin = Math.min(tx1,tx2);
+    var txmax = Math.max(tx1,tx2);
+    var tymin = Math.min(ty1,ty2);
+    var tymax = Math.max(ty1,ty2);
+
+    if(txmin > tymax || tymin > txmax)
+        return null;
+    else
+        return Math.max(txmin,tymin);
 }
 
 /* Rav vs Convex

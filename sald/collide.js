@@ -3,7 +3,7 @@ function neg2(v) {
 }
 
 function dot2(u,v) {
-    return u.x*v.x + u.y+v.y;
+    return u.x*v.x + u.y*v.y;
 }
 
 function length_squared2(v) {
@@ -27,30 +27,24 @@ function perp2(v) {
 }
 
 function norm2(v) {
-    var l = Math.sqrt(dot(v,v));
+    var l = Math.sqrt(dot2(v,v));
     return {x: v.x/l, y: v.y/l};
 }
 
-function minDot2(p,d,initial) {
-    var i = initial || 0;
-    
-    var v,next = dot(p[i],d);
-    do {
-        v = next;
-        i = (i + 1) % p.length;
-        next = dot(p[i],d);
-    } while(v > next)
-    i--;
+function cross2(u,v) {
+    return u.x * v.y - u.y * v.x;
+}
 
-    next = v;
-    do {
-        v = next;
-        i = (i - 1 + p.length) % p.length;
-        next = dot(p[i], d);
-    } while (v > next)
-    i++;
+function minDot2(p, pos, axis) {
+    function f(v) {
+        return dot2(sub2(v,pos), axis);
+    }
 
-    return {i: i, v: v};
+    var v = Number.POSITIVE_INFINITY;
+    for(var i = 0; i < p.length; i++) {
+        v = Math.min(v,f(p[i]));
+    }
+    return v;
 }
 
 /* Circle vs Circle
@@ -62,7 +56,8 @@ function minDot2(p,d,initial) {
  */
 function circleCircle(c1,c2) {
     var r = c1.r + c2.r;
-    return dot(c1,c1) < r*r;
+    var d = sub2(c1,c2);
+    return Math.abs(dot2(d,d)) < r*r;
 }
 
 /* Rectangle vs Rectangle
@@ -87,49 +82,27 @@ function rectangleRectangle(r1, r2) {
  *  true if p1 and p2 do intersect
  */
 function convexConvex(p1, p2) {
-
     for(var i = 0; i < p1.length; i++) {
-        var edge = neg2(p1[(i+1) % p1.length],p1[i]);
+        var edge = sub2(p1[i], p1[(i+1) % p1.length]);
         var axis = perp2(edge);
-        var naxis = neg2(axis);
 
-        var min1 = minDot2(p1, axis, p1.lastMin);
-        var max2 = minDot2(p1, naxis, p1.lastMax);
-        var min2 = minDot2(p2, axis, p2.lastMin);
-        var max2 = minDot2(p2, naxis, p2.lastMax);
-
-        p1.lastMin = min1.i;
-        p1.lastMax = max1.i;
-        p2.lastMin = min2.i;
-        p2.lastMax = max2.i;
-
-        if(min1.x > max2.x ||
-            min2.x > max1.x ||
-            min1.y > max2.y ||
-            min2.y > max1.y)
+        var d  = minDot2(p2, p1[i], axis, p2.lastMin);
+        
+        if(d > 0) {
             return false;
+        }
+        
     }
 
     for(var i = 0; i < p2.length; i++) {
-        var edge = neg2(p2[(i+1) % p2.length],p2[i]);
+        var edge = sub2(p2[i], p2[(i+1) % p2.length]);
         var axis = perp2(edge);
-        var naxis = neg2(axis);
-
-        var min1 = minDot2(p1, axis, p1.lastMin);
-        var max2 = minDot2(p1, naxis, p1.lastMax);
-        var min2 = minDot2(p2, axis, p2.lastMin);
-        var max2 = minDot2(p2, naxis, p2.lastMax);
-
-        p1.lastMin = min1.i;
-        p1.lastMax = max1.i;
-        p2.lastMin = min2.i;
-        p2.lastMax = max2.i;
-
-        if(min1.x > max2.x ||
-            min2.x > max1.x ||
-            min1.y > max2.y ||
-            min2.y > max1.y)
+        
+        var d = minDot2(p1, p2[i], axis, p1.lastMin);
+        
+        if(d > 0) {
             return false;
+        }
     }
 
     return true;
@@ -158,15 +131,14 @@ function rayCircle(r, c) {
         disc = Math.sqrt(disc);
 
         var ts = [(-b-disc)/(2*a),(-b+disc)/(2*a)];
-        ts = ts.filter(function(t) {
-            return 0 <= t && t <= 1;
-        });
-        
-        if(ts.length == 0) {
+        var min = Math.min(ts[0],ts[1]);
+        var max = Math.max(ts[1],ts[1]);
+        if(max <= 0 || min >= 1)
             return null;
-        } else {
-            return {t: ts.reduce(Math.min)};
-        }
+        if(min >= -1)
+            return {t: Math.max(0,min)};
+        else
+            return {t: max};
     }
 }
 
@@ -180,23 +152,45 @@ function rayCircle(r, c) {
 function rayRectangle(r, b) {
     var e = r.start;
     var d = sub2(r.end,r.start);
-    var min = sub2(r.min,e);
-    var max = sub2(r.max,e);
+    var min = sub2(b.min,e);
+    var max = sub2(b.max,e);
 
     var tx1 = min.x / d.x;
     var tx2 = max.x / d.x;
     var ty1 = min.y / d.y;
     var ty2 = max.y / d.y;
 
-    var txmin = Math.min(tx1,tx2);
+    var txmin = Math.max(0,Math.min(tx1,tx2));
     var txmax = Math.max(tx1,tx2);
-    var tymin = Math.min(ty1,ty2);
+    var tymin = Math.max(0,Math.min(ty1,ty2));
     var tymax = Math.max(ty1,ty2);
 
     if(txmin > tymax || tymin > txmax)
         return null;
     else
         return {t: Math.max(txmin,tymin)};
+}
+
+// http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/565282#565282
+function lineIntersection(r1,r2) {
+    var p = r1.start;
+    var r = sub2(r1.end,r1.start);
+
+    var q = r2.start;
+    var s = sub2(r2.end,r2.start);
+
+    var denom = cross2(r,s);
+    if(denom == 0)
+        return null;
+
+    var qp = sub2(q,p);
+
+    var t = cross2(qp,s) / denom;
+    var u = cross2(qp,r) / denom;
+
+    if(0 <= t && 0 <= u && u <= 1)
+        return {t: t};
+    return null;
 }
 
 /* Rav vs Convex
@@ -207,25 +201,21 @@ function rayRectangle(r, b) {
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
 function rayConvex(r, p) {
-    var tmin = Number.NEGATIVE_INFINITY;
-    var tmax = Number.POSITIVE_INFINITY;
-    var length = Math.sqrt(dot2(sub2(r.end,r.start)));
-    
-    for(int i = 0; i < p.length; i++) {
-        var axis = norm2(perp2(sub2(p[i],p[(i+1) % p.length])));
-        var p1 = dot2(r.start,axis);
-        var p2 = dot2(r.end,axis);
-        var pmin = Math.min(p1,p2);
-        var pmax = Math.max(p1,p2);
-
-        tmin = Math.max(pmin / length, tmin);
-        tmax = Math.min(pmax / length, tmax);
-
-        if(tmin < tmax && tmax >= 0 && tmin <= 1)
-            return null;
+    var t = Number.POSITIVE_INFINITY;
+    var passed = 0;
+    for(var i = 0; i < p.length; i++) {
+        var col = lineIntersection(r,{start: p[i], end: p[(i + 1) % p.length]});
+        if(col) {
+            t = Math.min(t,col.t);
+            passed++;
+        }
     }
-
-    return {t: tmin};
+    // Jordan curve theorem
+    if(passed % 2)
+        return {t: 0};
+    if(t <= 1)
+        return {t: t};
+    return null;
 }
 
 

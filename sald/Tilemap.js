@@ -1,82 +1,105 @@
-var Tilemap = function(srcJson){
-	this.load(srcJson);
+var Tilemap = function(img, map, tilW, tilH, tilR, tilC, mapW, mapH){
+	this.load(img, map, tilW, tilH, tilR, tilC, mapW, mapH);
 }
+// width of the onscreen map in tiles
+Tilemap.prototype.mapwidth = 0;
+// height of the onscreen map in tiles
+Tilemap.prototype.mapheight = 0;
+// width of one tile in pixels
+Tilemap.prototype.tilewidth = 8;
+// height of one tile in pixels
+Tilemap.prototype.tileheight = 8;
+// rows of tiles in the source image
+Tilemap.prototype.tilerows = 0;
+// columns of tiles in the source image
+Tilemap.prototype.tilecols = 0;
+// array that represents the position of the 
+Tilemap.prototype.map = [];
+// URL for the tilemap source image
+Tilemap.prototype.img = null;
 
-Tilemap.prototype.width = 0
-Tilemap.prototype.height = 0
-Tilemap.prototype.tilesize = 8
-Tilemap.prototype.tilecount = 0
-Tilemap.prototype.tiles = []
-Tilemap.prototype.img = null
-
+// runs through tilemap, returns array of tiles with given tag
 Tilemap.prototype.getTilesByTag = function(tag){
 	var ret = [];
-	for (var r = 0; r < this.height; r++)
+	for (var r = 0; r < this.mapheight; r++)
 	{
-		for (var c = 0; c < this.width; c++)
+		for (var c = 0; c < this.mapwidth; c++)
 		{
 			var idx = r * this.width + c;
-			if (this.tiles[idx].tags.indexOf(tag) > -1)
+			if (this.map[idx].tags.indexOf(tag) > -1)
 			{
-				ret.push({x: c, y: r, tile: this.tiles[idx]});
+				ret.push({x: c, y: r, tile: this.map[idx]});
 			}
 		}
 	}
 	return ret;
 }
 
-// returns the tile { name , tags[] } at location (x,y)
+// returns the tile { name , tags[] , xidx, yidx} at location (x,y)
 Tilemap.prototype.getTile = function(x, y){
-	return this.tiles[y * this.width + x];
+	return this.map[y * this.mapwidth + x];
 }
-
+// adds a tag to the tile at x, y in the map
 Tilemap.prototype.addTag = function(x, y, tag){
-	this.tiles[y * this.width + x].tags.push(tag);
+	this.map[y * this.mapwidth + x].tags.push(tag);
 }
-
+// removes a tag from a tile at (x, y) in the map
 Tilemap.prototype.removeTag = function(x, y, tag){
-	var idx = y * this.width + x;
-	this.tiles[idx].tags = this.tiles[idx].tags.filter(function(element){return element != tag;});
+	var idx = y * this.mapwidth + x;
+	this.map[idx].tags = this.map[idx].tags.filter(function(element){return element != tag;});
 }
-
+// removes all tags from a tile at (x, y) in the map
 Tilemap.prototype.clearTags = function(x, y){
-	this.tiles[y * this.width + x].tags = [];
+	this.map[y * this.mapwidth + x].tags = [];
 }
-
+// replaces array of tags with new array of tags on the map
 Tilemap.prototype.setTags = function(x, y, tags){
 	this.tiles[y * this.width + x].tags = tags;
 }
-
-Tilemap.prototype.load = function (srcJson) {
-	var fields = ["width", "height", "tilesize", "tilecount", "tiles", "img"];
-	for (var i = 0; i < fields.length; i++) {
-		this[fields[i]] = srcJson[fields[i]];
-	}
+// initialization function, called on Tilemap object creation
+Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH) {
+    this.img = img;
 	var imgSrc = this.img;
 	this.img = new Image();
 	this.img.src = imgSrc;
+    this.map = map;
+    this.tilewidth = tilW;
+    this.tileheight = tilH;
+    this.tilerows = tilR;
+    this.tilecols = tilC;
+    this.mapwidth = mapW;
+    this.mapheight = mapH;
 }
-
+// draws current tiles in view
 Tilemap.prototype.draw = function(camera) {
 	var size = window.sald.size;
+    //calculates minimum tile to show
 	var minTile = {
-		x: Math.floor(camera.x - (size.x / 2 / this.tilesize)) | 0,
-		y: Math.floor(camera.y - (size.y / 2 / this.tilesize)) | 0
+		x: Math.floor(camera.x - (size.x / 2 / this.tilewidth)) | 0,
+		y: Math.floor(camera.y - (size.y / 2 / this.tileheight)) | 0
 	};
+    // calculates maximum tile to show
 	var maxTile = {
-		x: Math.floor(camera.x + (size.x / 2 / this.tilesize)) | 0,
-		y: Math.floor(camera.y + (size.y / 2 / this.tilesize)) | 0
+		x: Math.floor(camera.x + (size.x / 2 / this.tilewidth)) | 0,
+		y: Math.floor(camera.y + (size.y / 2 / this.tileheight)) | 0
 	};
-
+    // runs through rectangle of all tiles to be shown 
 	for (var ty = minTile.y; ty <= maxTile.y; ++ty) {
 		for (var tx = minTile.x; tx <= maxTile.x; ++tx) {
-			var idx = 4;
-			if (ty >= 0 && ty < this.height && tx >= 0 && tx < this.width)
-				idx = this.getTile(tx, ty).idx;
+            //default tile to show
+			var xidx = 0;
+            var yidx = 0;
+			if (ty >= 0 && ty < this.mapheight && tx >= 0 && tx < this.mapwidth)
+            {
+                // determines tile index in tilemap
+				xidx = this.getTile(tx, ty).xidx;
+                yidx = this.getTile(tx, ty).yidx;
+            }
 			var ctx = window.sald.ctx;
 			ctx.save();
 			ctx.transform(1, 0, 0, -1, tx, ty + 1);
-			ctx.drawImage(this.img, idx * this.tilesize, 0, this.tilesize, this.tilesize, 0, 0, 1, 1);
+            // draws tile on screen
+			ctx.drawImage(this.img, xidx * this.tilewidth, yidx * this.tileheight, this.tilewidth, this.tileheight, 0, 0, 1, 1);
 			ctx.restore();
 		}
 	}

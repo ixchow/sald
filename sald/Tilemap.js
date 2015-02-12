@@ -1,6 +1,7 @@
 var Tilemap = function(img, map, tilW, tilH, tilR, tilC, mapW, mapH){
 	this.load(img, map, tilW, tilH, tilR, tilC, mapW, mapH);
 }
+// VARIABLES
 // width of the onscreen map in tiles
 Tilemap.prototype.mapwidth = 0;
 // height of the onscreen map in tiles
@@ -13,11 +14,12 @@ Tilemap.prototype.tileheight = 8;
 Tilemap.prototype.tilerows = 0;
 // columns of tiles in the source image
 Tilemap.prototype.tilecols = 0;
-// array that represents the position of the 
+// array that represents the position of the tiles in game map takes in a 2D array
 Tilemap.prototype.map = [];
 // URL for the tilemap source image
 Tilemap.prototype.img = null;
 
+// FUNCTIONS
 // runs through tilemap, returns array of tiles with given tag
 Tilemap.prototype.getTilesByTag = function(tag){
 	var ret = [];
@@ -62,7 +64,16 @@ Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH)
 	var imgSrc = this.img;
 	this.img = new Image();
 	this.img.src = imgSrc;
-    this.map = map;
+    for(var i = 0; i < mapH; i++){
+        for(var j = 0; j < mapW; j++){
+            //given map should be 2D array with format for mapW=4, mapH=4
+            /*[[1, 2, 3, 4],
+               [5, 6, 7, 8]
+               [9,10,11,12]
+               [13,14,15,16]]*/
+            this.map[(i * mapW) + j] = map[i][j];
+        }
+    }
     this.tilewidth = tilW;
     this.tileheight = tilH;
     this.tilerows = tilR;
@@ -83,6 +94,8 @@ Tilemap.prototype.draw = function(camera) {
 		x: Math.floor(camera.x + (size.x / 2 / this.tilewidth)) | 0,
 		y: Math.floor(camera.y + (size.y / 2 / this.tileheight)) | 0
 	};
+    // gets context
+    var ctx = window.sald.ctx;
     // runs through rectangle of all tiles to be shown 
 	for (var ty = minTile.y; ty <= maxTile.y; ++ty) {
 		for (var tx = minTile.x; tx <= maxTile.x; ++tx) {
@@ -95,7 +108,6 @@ Tilemap.prototype.draw = function(camera) {
 				xidx = this.getTile(tx, ty).xidx;
                 yidx = this.getTile(tx, ty).yidx;
             }
-			var ctx = window.sald.ctx;
 			ctx.save();
 			ctx.transform(1, 0, 0, -1, tx, ty + 1);
             // draws tile on screen

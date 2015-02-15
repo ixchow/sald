@@ -160,15 +160,19 @@ function rayRectangle(r, b) {
     var ty1 = min.y / d.y;
     var ty2 = max.y / d.y;
 
-    var txmin = Math.max(0,Math.min(tx1,tx2));
+    var txmin = Math.min(tx1,tx2);
     var txmax = Math.max(tx1,tx2);
-    var tymin = Math.max(0,Math.min(ty1,ty2));
+    var tymin = Math.min(ty1,ty2);
     var tymax = Math.max(ty1,ty2);
 
-    if(txmin > tymax || tymin > txmax)
+    var min = Math.max(txmin,tymin);
+    var max = Math.min(txmax,tymax);
+    if(min < max && min <= 1 && max >= 0) {
+        return {t: Math.max(0,min)};
+    }
+    else {
         return null;
-    else
-        return {t: Math.max(txmin,tymin)};
+    }
 }
 
 // http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/565282#565282

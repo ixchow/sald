@@ -1,3 +1,4 @@
+ 
 /*
  * Sprite - prototype for sprite object
  * Possible arguments
@@ -6,8 +7,6 @@
  *  (options)
  *
  */
-var ctx = window.sald.ctx;
-
 var Sprite = function (arg1,arg2) {
   var data;
 
@@ -16,6 +15,7 @@ var Sprite = function (arg1,arg2) {
     data = normalize_options(arg2,arg1); //the final data object would have a list of animations and the image. 
   }
   this.data = data;
+  this.animators = createAnimators(data);
 }
 
 /*
@@ -45,7 +45,7 @@ function normalize_options(opts,img) {
     var anim = anims[name];  //anim is the string passed in the object definition, 'walk', 'run'
     if (exists(anim.size)) {
       anim.img = data.img;
-      anim.frames = expand_repeat_opts(anim); //anim.frames is an array of individual sprites for that particular animation. for eg: walk could have 4 different frames for walk animation and these get populated in frames
+      anim.frames = expand_repeat_opts(anim); //anim.frames is an array of individual sprites for that particular animation.
       data.animations[name] = anim;
     }
     else {
@@ -114,35 +114,114 @@ function propogate_draw_data(prev,next) {
   }
 }
 
+function createAnimators(drawData)
+{
+    var animators = {};
+    for (var name in drawData.animations)
+    {
+        animators[name] = new Animator(drawData.animations[name].frames);
+    }
+    return animators;
+}
 /*
  * draw - draw the sprite animation specified
- * anim: current animation to draw
- * frame: frame of animation
+ * anim: animation name
  * x: x position in world space
  * y: y position in world space
+ * angle: rotate by (in degrees)
+ * scalex: x scale of sprite
+ * scaley: y scale of sprite
+ * anchorx: x anchor value (0-1)
+ * anchory: y anchor value (0-1)
  */
+Sprite.prototype.draw = function (anim, x, y, angle, scalex, scaley, anchorx, anchory) {
+    var drawData = this.animators[anim].getNextFrameData();
 
-Sprite.prototype.draw = function (anim,frame,x,y) {
-  var drawData = this.data.animations[anim].frames[frame]; //fetches a single frame image to draw. to loop through animations, we would just update the frame every update
-  //console.log(drawData);
- 
+console.log(drawData.width);
   //draw this stuff
   if(window.sald.ctx) {
     window.sald.ctx.save();
-    
+
+        //rotate(x, y, drawData, angle, anchorx, anchory);
+
     //locally flip the 'y' axis since images draw with upper-left origins:
-    window.sald.ctx.transform(1,0,
+    window.sald.ctx.transform(1, 0,
       0,-1,
-      Math.round(x*drawData.width - 0.5 * drawData.width)/drawData.width,
-      Math.round(y*drawData.height - 0.5 * drawData.height)/drawData.height
+      Math.round(x*drawData.width - anchorx*drawData.width)/drawData.width,
+      Math.round(y*drawData.height - anchory*drawData.height)/drawData.height
     );
 
-    window.sald.ctx.drawImage(drawData.img,
-      drawData.x, drawData.y,
-      drawData.width, drawData.height,
-      0,0,1,1);
+    window.sald.ctx.drawImage(drawData.img, drawData.x, drawData.y, 
+            drawData.width, drawData.height, 
+            0, 0,
+            scalex, scaley);
     window.sald.ctx.restore();
   }
 }
 
 module.exports = Sprite;
+
+function rotate(x, y, drawData, angle, anchorx, anchory)
+{
+    var rotationPointx = x - anchorx * drawData.width;
+    var rotationPointy = y - anchory * drawData.height;
+
+    rotationPointx = Math.round(x*drawData.width - anchorx*drawData.width)/drawData.width;
+    rotationPointy = Math.round(y*drawData.height - anchory*drawData.height)/drawData.height;
+
+    window.sald.ctx.translate(rotationPointx, rotationPointy);
+    window.sald.ctx.rotate(angle * Math.PI / 180);
+    window.sald.ctx.translate(-rotationPointx, -rotationPointy);
+}
+
+function Animator(frames)
+{
+    this.isStopped = false;
+  this.isLooping = false;
+    this.currentFrame = 0;
+    this.animationFrames = frames;
+    var animationSpeed = 60;
+    this.animationSpeed = Math.floor(60 / animationSpeed);
+    this.frameSkipCounter = 0;
+}
+
+Animator.prototype.loop = function (loop) {
+    this.isLooping = loop;
+}
+
+Animator.prototype.speed = function(animationSpeed) {
+    if (animationSpeed == 0) animationSpeed = 60;
+    this.animationSpeed = Math.floor(60 / animationSpeed);
+}
+
+Animator.prototype.getNextFrameData = function () {
+    if (this.isStopped)
+    {
+        // do nothing. Dont update animation frame
+        // or reset the animation
+        this.currentFrame = 0;
+        this.frameSkipCounter = 0;
+        this.isStopped = false;
+        return this.animationFrames[this.currentFrame];
+    }
+    if(this.frameSkipCounter == this.animationSpeed)
+    {
+        this.currentFrame++;
+        this.frameSkipCounter = 0;
+    }
+    this.frameSkipCounter++;
+
+    if (this.animationFrames.length-1 == this.currentFrame)
+    {
+        if (this.isLooping) {
+            this.currentFrame = 0;
+        }
+    }
+
+    return this.animationFrames[this.currentFrame];
+}
+
+Animator.prototype.stop = function() {
+  this.isLooping = false;
+  this.isStopped = true;
+}

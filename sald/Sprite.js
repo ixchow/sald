@@ -6,20 +6,14 @@
  *  (options)
  *
  */
+var ctx = window.sald.ctx;
+
 var Sprite = function (arg1,arg2) {
   var data;
+
   // arg1 is img
   if(arg1 instanceof HTMLImageElement) {
-    data = normalize_options(arg2,arg1);
-  }
-  // arg1 is imgs
-  else if(Array.isArray(arg1)) {
-    data = normalize_options(arg2);
-    deref_images(arg1,data);
-  }
-  // arg1 is opts
-  else {
-    data = normalize_options(arg1);
+    data = normalize_options(arg2,arg1); //the final data object would have a list of animations and the image. 
   }
   this.data = data;
 }
@@ -37,74 +31,37 @@ function exists(x) {
  */
 function normalize_options(opts,img) {
   var data = {
-    animations: {}
+    animations: {} //would populate this field after we fetch the list of anims, 'walk' ,'run' etc
   };
 
   if(img) {
     data.img = img;
   }
 
-  var anims = opts.animations || opts;
-
+  var anims = opts;
+  
   // loop each animation in opts
   for(var name in anims) {
-    var anim = anims[name];
-    // if opts is just frames, store
-    if(Array.isArray(anim)) {
-      data.animations[name] = {frames:anim};
-    }
-    // if opts specifies how to repeat
-    else if (exists(anim.size)) {
-      anim.img = anim.img || data.img;
-      anim.frames = expand_repeat_opts(anim);
+    var anim = anims[name];  //anim is the string passed in the object definition, 'walk', 'run'
+    if (exists(anim.size)) {
+      anim.img = data.img;
+      anim.frames = expand_repeat_opts(anim); //anim.frames is an array of individual sprites for that particular animation. for eg: walk could have 4 different frames for walk animation and these get populated in frames
       data.animations[name] = anim;
     }
-    // if opts specifies frames explicitly
-    else if(exists(anim.frames)) {
-      data.animations[name] = anim;
-    }
-    // not supported
     else {
-      //console.log(opts);
       throw new Error(name + ' did not match any valid animation definitions');
     }
   }
-
   return unroll_draw_data(data);
 }
 
-/*
- * deref_images - used if an array of images was provided, turns the value of
- *  img keys to a reference to that image if it is an index into the imgs array
- */
-function deref_images(imgs,opts) {
-  function deref(imgs,x) {
-    if(typeof x.img == 'number') {
-      x.img = imgs[x.img]
-    }
-  }
-
-  deref(imgs,opts);
-  for(var name in opts.animations) {
-    var anim = opts.animations[name];
-    deref(imgs,anim);
-    for(var i = 0; i < anim.frames.length; i++) {
-      deref(imgs,anim.frames[i]);
-    }
-  }
-}
-
-/*
- * expand_repeat_opts: take a frame definition with size (numeber of frames)
- *  specified, and turn it into each individual frame
- */
 function expand_repeat_opts(opts) {
   var frames = [];
 
-  // loop by size
+  // loop by size, collect each individual sprites and store it in the frames array
   for(var i = 0; i < opts.size; i++) {
     // increment location frame is read from
-    var x = opts.x + i*opts.width;
+    var x = opts.x + i*opts.width; 
     var y = opts.y;
 
     // create new frame
@@ -164,26 +121,27 @@ function propogate_draw_data(prev,next) {
  * x: x position in world space
  * y: y position in world space
  */
+
 Sprite.prototype.draw = function (anim,frame,x,y) {
-  var drawData = this.data.animations[anim].frames[frame];
+  var drawData = this.data.animations[anim].frames[frame]; //fetches a single frame image to draw. to loop through animations, we would just update the frame every update
   //console.log(drawData);
-
+ 
   //draw this stuff
-  if(window.ctx) {
-    window.ctx.save();
-
+  if(window.sald.ctx) {
+    window.sald.ctx.save();
+    
     //locally flip the 'y' axis since images draw with upper-left origins:
-    window.ctx.transform(1,0,
+    window.sald.ctx.transform(1,0,
       0,-1,
       Math.round(x*drawData.width - 0.5 * drawData.width)/drawData.width,
       Math.round(y*drawData.height - 0.5 * drawData.height)/drawData.height
     );
 
-    window.ctx.drawImage(drawData.img,
+    window.sald.ctx.drawImage(drawData.img,
       drawData.x, drawData.y,
       drawData.width, drawData.height,
       0,0,1,1);
-    window.ctx.restore();
+    window.sald.ctx.restore();
   }
 }
 

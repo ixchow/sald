@@ -2,7 +2,7 @@
 The benchmark library can be used to calculate some data about the performance of a function.
 
 ##Example
-```
+```javascript
 var benchmark = require('sald:benchmark');
 
 function myReallySlowFunction() {

@@ -18,6 +18,9 @@ Tilemap.prototype.tilecols = 0;
 Tilemap.prototype.map = [];
 // URL for the tilemap source image
 Tilemap.prototype.img = null;
+Tilemap.prototype.defaultx = 1;
+Tilemap.prototype.defaulty = 1;
+
 
 // Column offset {x : xOffset, y : yOffset};
 Tilemap.prototype.columnOffset = null;
@@ -63,7 +66,7 @@ Tilemap.prototype.setTags = function(x, y, tags){
 }
 
 // initialization function, called on Tilemap object creation
-Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH) {
+Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH, def) {
     this.img = img;
 	/*var imgSrc = this.img;
 	this.img = new Image();
@@ -76,8 +79,8 @@ Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH)
                [9,10,11,12]
                [13,14,15,16]]*/
             var idx = map[i][j];
-            var x = idx % mapW;
-            var y = Math.floor(idx / mapH);
+            var x = idx % tilC;
+            var y = Math.floor(idx / tilR);
             
             this.map[(i * mapW) + j] = {xidx:x, yidx:y};
         }
@@ -88,6 +91,8 @@ Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH)
     this.tilecols = tilC;
     this.mapwidth = mapW;
     this.mapheight = mapH;
+    this.defaultx = def % tilC;
+    this.defaulty = Math.floor(def/tilR);
 }
 
 function roundToZero(number){
@@ -149,18 +154,19 @@ Tilemap.prototype.draw = function(camera) {
 			sin = 1 - sin;
 			switchRowsAndCols = true;
 
-			vertical = this.columnOffset.y;
+            // TODO fix this for ISOMETRIC!!!
+			vertical = this.tileheight;//this.columnOffset.y;
 			horizontal = this.tilewidth * (1 - sin);
 		} else {
 			vertical = this.tileheight * (1 - sin);
-			horizontal = this.columnOffset.x;
+			horizontal = this.tilewidth;//this.columnOffset.x;
 		}
 
 		// var horizontal = this.tilewidth * sin;
 
 		minTile = {
-		    row: Math.floor(minPixel.y / vertical),
-	        col: Math.floor(minPixel.x / horizontal)
+		    row: this.mapheight - Math.floor(minPixel.y / vertical),
+	        col: this.mapwidth - Math.floor(minPixel.x / horizontal)
 		};
 
 	} else {
@@ -218,10 +224,12 @@ Tilemap.prototype.draw = function(camera) {
 				var tile = this.getTile(tileCol, tileRow);
 				xidx = tile.xidx;
 				yidx = tile.yidx;
-                
-                console.log(xidx);
-                console.log(yidx);
-                console.log("\n");
+            }
+            else{
+                xidx = 1;//this.defaultx;
+                yidx = 1;//this.defaulty;
+            }
+
                 
 				ctx.save();
 				ctx.transform(1, 0, 0, -1, tileCol, tileRow + 1);
@@ -234,7 +242,7 @@ Tilemap.prototype.draw = function(camera) {
 				
 				ctx.drawImage(this.img, xidx * this.tilewidth, yidx * this.tileheight, this.tilewidth, this.tileheight, 0, 0, 1, 1);
 				ctx.restore();
-			}
+			
 		}
 	}
 }

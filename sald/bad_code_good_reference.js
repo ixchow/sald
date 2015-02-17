@@ -72,9 +72,9 @@ function main() {
     var viewCenter = [25, 25];
 
     // angle of the x axis. Should be in [0, PI/2]
-    var angleX = Math.PI / 2;
-    // angle of the y axis. Should be in [PI/2, PI[
-    var angleY = 2.8;
+    var angleX = 0;
+    // angle of the y axis. Should be in [PI/2, PI]
+    var angleY = Math.PI/2;
     // scale for the tiles
     var scale = 60.0;
 
@@ -265,22 +265,6 @@ function main() {
         c.setTransform(1, 0, 0, 1, 0, 0);
     }
 
-    // draw at tree at point coord. 
-    // if 3d, third coord is understood as scale.
-    function drawTree(pt, alpha) {
-        c.save();
-        c.translate(pt[0], pt[1]);
-        if (enable3dEffect) {
-            c.scale(pt[2], pt[2]);
-        }
-        if (alpha < 1.0) c.globalAlpha = alpha;
-        c.fillStyle = 'hsl(19,56%,40%);';
-        c.fillRect(-4, -6, 8, 6);
-        c.fillStyle = 'hsl(90,100%,47%);';
-        c.fillRect(-8, -22, 16, 18);
-        c.restore();
-    }
-
     function drawFilledTile(colOffset, rowOffset, tileValue) {
         tileValue = tileValue % 16;
         var pt = [colOffset - 0.5, rowOffset - 0.5];
@@ -296,37 +280,8 @@ function main() {
     }
 
     function drawTile(colOffset, rowOffset, tileValue) {
-        if (enable3dEffect) return drawTile3D(colOffset, rowOffset, tileValue);
         c.fillStyle = hslMap[tileValue % 360]; // == 'hsl(' + (tileValue) + ',75%,75%)';
         c.fillRect(colOffset - 0.5, rowOffset - 0.5, 1, 1);
-    }
-
-    // draw a tile at (colOffset, rowOffset ) centered world coordinates.
-    function drawTile3D(colOffset, rowOffset, tileValue) {
-        var pt = [0, 0];
-        c.beginPath();
-        c.fillStyle = 'hsl(' + (tileValue) + ',75%,75%)';
-        projectFromCenter(colOffset - 0.5, rowOffset - 0.5, pt);
-        if (pt[1] > canvasHeight) return;
-        c.moveTo(pt[0], pt[1]);
-        projectFromCenter(colOffset + 0.5, rowOffset - 0.5, pt);
-        c.lineTo(pt[0], pt[1]);
-        projectFromCenter(colOffset + 0.5, rowOffset + 0.5, pt);
-        c.lineTo(pt[0], pt[1]);
-        projectFromCenter(colOffset - 0.5, rowOffset + 0.5, pt);
-        c.lineTo(pt[0], pt[1]);
-        if (pt[1] < displayCenter[1]) {
-            var dist = Math.max(Math.abs(colOffset), Math.abs(rowOffset));
-            var alpha = 1.0;
-            if (dist >= shadowStart) alpha = 1 - Math.pow((dist - shadowStart) / shadowLength, 0.8);
-            c.globalAlpha = alpha;
-        }
-        c.fill();
-        c.closePath();
-        c.fillStyle = '#000';
-        c.globalAlpha = 1.0;
-        projectFromCenter(colOffset, rowOffset, pt);
-        if (!(tileValue % 17) || ((tileValue + 1) % 17) == 0) drawTree(pt, alpha + 0.05);
     }
 
     // draw all tiles of the tileMap, with a view centered on
@@ -362,7 +317,6 @@ function main() {
             if (!clampRange(rowRange, tiles_dimension)) return;
             //
             var drawTileMethod = (experimental_useBitmapTiles) ? drawFilledTile : drawTile;
-            if (enable3dEffect) drawTileMethod = drawTile3D;
             // iterate on col/rows
             var colEnd = colRange[1];
             var rowStart = rowRange[0],
@@ -398,8 +352,7 @@ function main() {
     // ----------------------------------------
     var landMoveSpeed = 0.07;
 
-    if (enable3dEffect) resetTransform();
-    else setWorldTransform();
+    setWorldTransform();
 
 
     function animate() {
@@ -427,9 +380,9 @@ function main() {
 
         drawTiles(viewCenter);
         // draw the tile hovered
-        var origPt = [mousePos[0], mousePos[1]];
-        revertPoint(origPt, viewCenter);
-        drawTile(origPt[0] - viewCenter[0], origPt[1] - viewCenter[1], 20.0);
+        // var origPt = [mousePos[0], mousePos[1]];
+        // revertPoint(origPt, viewCenter);
+        // drawTile(origPt[0] - viewCenter[0], origPt[1] - viewCenter[1], 20.0);
     }
     animate();
 

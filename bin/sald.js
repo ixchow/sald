@@ -13,7 +13,7 @@ var usage = [
 
 switch(cmd) {
 	case "build":
-		var compiler = require('../lib/compiler.js');
+		var compiler = require('../lib/build.js');
 		compiler.compile();
 		break;
 	case "new":

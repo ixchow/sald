@@ -1,6 +1,6 @@
 #Sprite Library
 
-1. Create a new sprite object in your game scene file like below
+-> Create a new sprite object in your game scene file like below
 
 var sprite = require('sald:Sprite.js');
 var heroImg = require('../img/spritesheet.png'); 
@@ -27,7 +27,7 @@ second parameter has to be an options of animations required with x,y,width,heig
 [width,height represent the width and height of each sprite in pixel size, you can check the same in paint for image width and height in pixels]
 [size is the max number of frames till which that animation needs to be played from the spritesheet image]
 
-2. The draw function takes the following arguments: 
+-> The draw function takes the following arguments: 
   * anim: animation name
   * x: x position in world space
   * y: y position in world space
@@ -39,7 +39,7 @@ second parameter has to be an options of animations required with x,y,width,heig
   Usage: Call the draw function inside the update loop.
   			sprite.draw(anim, x, y, )
 
-3. You do not need to give the frame number in draw function anymore because it is handled by a framework called Animators inside the Sprite object.
+You do not need to give the frame number in draw function anymore because it is handled by a framework called Animators inside the Sprite object.
   When you initialize a Sprite object, each animation of sprite gets an animator object attached to it internally which handles the state of the animation.
   It also provides neat features like animation speed, looping functionality and stop feature.
 

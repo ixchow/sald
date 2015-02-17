@@ -61,9 +61,9 @@ Tilemap.prototype.setTags = function(x, y, tags){
 // initialization function, called on Tilemap object creation
 Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH) {
     this.img = img;
-	var imgSrc = this.img;
+	/*var imgSrc = this.img;
 	this.img = new Image();
-	this.img.src = imgSrc;
+	this.img.src = imgSrc;*/
     for(var i = 0; i < mapH; i++){
         for(var j = 0; j < mapW; j++){
             //given map should be 2D array with format for mapW=4, mapH=4

@@ -155,8 +155,8 @@ Tilemap.prototype.draw = function(camera) {
 		// var horizontal = this.tilewidth * sin;
 
 		minTile = {
-			row: floor(minPixel.y / vertical,
-			col: floor(minPixel.x / horizontal)
+		    row: floor(minPixel.y / vertical),
+	        col: floor(minPixel.x / horizontal)
 		};
 
 	} else {

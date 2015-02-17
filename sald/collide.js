@@ -1,52 +1,3 @@
-function neg2(v) {
-    return {x:-v.x,y:-v.y};
-}
-
-function dot2(u,v) {
-    return u.x*v.x + u.y*v.y;
-}
-
-function length_squared2(v) {
-    return dot2(v,v);
-}
-
-function length(v) {
-    return Math.sqrt(length_squared2(v));
-}
-
-function add2(u,v) {
-    return {x: u.x + v.x, y: u.y + v.y};
-}
-
-function sub2(u,v) {
-    return {x: u.x - v.x, y: u.y - v.y};
-}
-
-function perp2(v) {
-    return {x: -v.y, y: v.x};
-}
-
-function norm2(v) {
-    var l = Math.sqrt(dot2(v,v));
-    return {x: v.x/l, y: v.y/l};
-}
-
-function cross2(u,v) {
-    return u.x * v.y - u.y * v.x;
-}
-
-function minDot2(p, pos, axis) {
-    function f(v) {
-        return dot2(sub2(v,pos), axis);
-    }
-
-    var v = Number.POSITIVE_INFINITY;
-    for(var i = 0; i < p.length; i++) {
-        v = Math.min(v,f(p[i]));
-    }
-    return v;
-}
-
 /* Circle vs Circle
  * INPUT: two circles specified by position and radius:
  *  c1 = {x:, y:, r:}, c2 = {x:, y:, r:}
@@ -55,9 +6,12 @@ function minDot2(p, pos, axis) {
  *  true if c1 and c2 do intersect
  */
 function circleCircle(c1,c2) {
-    var r = c1.r + c2.r;
-    var d = sub2(c1,c2);
-    return Math.abs(dot2(d,d)) < r*r;
+    var rsum = c1.r + c2.r;
+    var dx = c1.x - c2.x;
+    var dy = c1.y - c2.y;
+    var distsq = dx*dx + dy*dy
+    
+    return rsum*rsum > distsq;
 }
 
 /* Rectangle vs Rectangle
@@ -82,30 +36,43 @@ function rectangleRectangle(r1, r2) {
  *  true if p1 and p2 do intersect
  */
 function convexConvex(p1, p2) {
-    for(var i = 0; i < p1.length; i++) {
-        var edge = sub2(p1[i], p1[(i+1) % p1.length]);
-        var axis = perp2(edge);
+    return convexConvexHelper(p1, p2) && convexConvexHelper(p2, p1)
+}
 
-        var d  = minDot2(p2, p1[i], axis, p2.lastMin);
+function convexConvexHelper(p1, p2) {
+    for (var i = 0; i < p1.length; i++) {
+        var x1 = p1[i].x;
+        var y1 = p1[i].y;
         
-        if(d > 0) {
-            return false;
+        var x2 = p1[(i+1) % p1.length].x;
+        var y2 = p1[(i+1) % p1.length].y;
+        
+        var x3 = p1[(i+2) % p1.length].x;
+        var y3 = p1[(i+2) % p1.length].y;
+        
+        var p1Side = lineSide(x1, y1, x2, y2, x3, y3);
+        var p2Side = 0;
+        
+        for (var j = 0; j < p2.length; j++) {
+            var p2x = p2[j].x;
+            var p2y = p2[j].y;
+            
+            p2Side = lineSide(x1, y1, x2, y2, p2x, p2y);
+            if (p1Side == p2Side) {
+                break;
+            }
         }
         
-    }
-
-    for(var i = 0; i < p2.length; i++) {
-        var edge = sub2(p2[i], p2[(i+1) % p2.length]);
-        var axis = perp2(edge);
-        
-        var d = minDot2(p1, p2[i], axis, p1.lastMin);
-        
-        if(d > 0) {
+        if (p1Side != p2Side) {
             return false;
         }
     }
-
+    
     return true;
+}
+
+function lineSide(x1, y1, x2, y2, px, py) {
+    return Math.sign((x1-x2)*(py-y1) - (y1-y2)*(px-x1));
 }
 
 /* Rav vs Circle
@@ -117,29 +84,35 @@ function convexConvex(p1, p2) {
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
 function rayCircle(r, c) {
-    var d = sub2(r.end, r.start);
-    var cp = sub2(r.start,c);
+    // Reference: http://math.stackexchange.com/questions/311921/get-location-of-vector-circle-intersection
+    var ray_dx = r.end.x - r.start.x;
+    var ray_dy = r.end.y - r.start.y;
+    var A = ray_dx * ray_dx + ray_dy * ray_dy;
+    
+    var rel_circlex = r.start.x - c.x;
+    var rel_circley = r.start.y - c.y;
+    
+    
+    var B = 2 * (ray_dx * rel_circlex + ray_dy * rel_circley);
+    var C = rel_circlex * rel_circlex + rel_circley * rel_circley - c.r * c.r;
 
-    var a = dot2(d,d);
-    var b = 2*dot2(d,cp);
-    var c = dot2(cp,cp) - c.r*c.r;
-
-    var disc = b*b - 4*a*c;
-    if(disc < 0) {
+    var discriminant = B * B - 4 * A * C;
+    
+    if (discriminant < 0) {
         return null;
-    } else {
-        disc = Math.sqrt(disc);
-
-        var ts = [(-b-disc)/(2*a),(-b+disc)/(2*a)];
-        var min = Math.min(ts[0],ts[1]);
-        var max = Math.max(ts[1],ts[1]);
-        if(max <= 0 || min >= 1)
-            return null;
-        if(min >= -1)
-            return {t: Math.max(0,min)};
-        else
-            return {t: max};
     }
+    else {
+        var T = (-B - Math.sqrt(discriminant))/(2*A)
+        var T2 = (-B + Math.sqrt(discriminant))/(2*A);
+        
+        if (T > 0 && T < 1) {
+            return {t:T};
+        }
+        else if (T2 > 0 && T2 < 1) {
+            return {t:T2};
+        }
+    }
+    return null;
 }
 
 /* Rav vs Rectangle
@@ -150,15 +123,17 @@ function rayCircle(r, c) {
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
 function rayRectangle(r, b) {
-    var e = r.start;
-    var d = sub2(r.end,r.start);
-    var min = sub2(b.min,e);
-    var max = sub2(b.max,e);
+    var dx = r.end.x - r.start.x;
+    var dy = r.end.y - r.start.y;
+    var minx = b.min.x - r.start.x;
+    var miny = b.min.y - r.start.y;
+    var maxx = b.max.x - r.start.x;
+    var maxy = b.max.y - r.start.y;
 
-    var tx1 = min.x / d.x;
-    var tx2 = max.x / d.x;
-    var ty1 = min.y / d.y;
-    var ty2 = max.y / d.y;
+    var tx1 = minx / dx;
+    var tx2 = maxx / dx;
+    var ty1 = miny / dy;
+    var ty2 = maxy / dy;
 
     var txmin = Math.min(tx1,tx2);
     var txmax = Math.max(tx1,tx2);
@@ -175,28 +150,13 @@ function rayRectangle(r, b) {
     }
 }
 
-// http://stackoverflow.com/questions/563198/how-do-you-detect-where-two-line-segments-intersect/565282#565282
-function lineIntersection(r1,r2) {
-    var p = r1.start;
-    var r = sub2(r1.end,r1.start);
-
-    var q = r2.start;
-    var s = sub2(r2.end,r2.start);
-
-    var denom = cross2(r,s);
-    if(denom == 0)
-        return null;
-
-    var qp = sub2(q,p);
-
-    var t = cross2(qp,s) / denom;
-    var u = cross2(qp,r) / denom;
-
-    if(0 <= t && 0 <= u && u <= 1)
-        return {t: t};
-    return null;
-}
-
+/* Rav vs Convex
+ * INPUT: ray as above, convex polygon as above.
+ * RETURN VALUE:
+ *  null if no intersection
+ *  {t:} if intersection
+ *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
+ */
 /* Rav vs Convex
  * INPUT: ray as above, convex polygon as above.
  * RETURN VALUE:
@@ -205,20 +165,53 @@ function lineIntersection(r1,r2) {
  *    -- NOTE: 0.0 <= t <= 1.0 gives the position of the first intersection
  */
 function rayConvex(r, p) {
-    var t = Number.POSITIVE_INFINITY;
-    var passed = 0;
-    for(var i = 0; i < p.length; i++) {
-        var col = lineIntersection(r,{start: p[i], end: p[(i + 1) % p.length]});
-        if(col) {
-            t = Math.min(t,col.t);
-            passed++;
+    var ray_dx = r.end.x - r.start.x;
+    var ray_dy = r.end.y - r.start.y;
+    var T_enter = Number.NEGATIVE_INFINITY;
+    var T_exit = Number.POSITIVE_INFINITY;
+    
+    for (var i = 0; i < p.length; i++) {
+        var startx = p[i].x;
+        var starty = p[i].y;
+        var endx = p[(i+1)%p.length].x;
+        var endy = p[(i+1)%p.length].y;
+        
+        var norm_dx = starty - endy;
+        var norm_dy = endx - startx;
+        
+        // Enter/exiting reference: http://geomalgorithms.com/a13-_intersect-4.html
+        var dot = ray_dx * norm_dx + ray_dy * norm_dy;
+        
+        var slope = (endy - starty)/(endx - startx);
+        
+        var T_numerator = (r.start.x - startx) * slope + starty - r.start.y;
+        var T_denominator = ray_dy - slope * ray_dx;
+        
+        var T_intersect = T_numerator / T_denominator;
+        
+        if (dot > 0) {
+            if (T_intersect > T_enter) {
+                T_enter = T_intersect;
+            }
+        }
+        else {
+            if (T_intersect < T_exit) {
+                T_exit = T_intersect;
+            }
         }
     }
-    // Jordan curve theorem
-    if(passed % 2)
-        return {t: 0};
-    if(t <= 1)
-        return {t: t};
+    
+    if (T_enter > T_exit) {
+        return null;
+    }
+    
+    if (T_enter > 0 && T_enter < 1) {
+        return {t:T_enter};
+    }
+    else if (T_exit > 0 && T_exit < 1) {
+        return {t:T_exit};
+    }
+    
     return null;
 }
 

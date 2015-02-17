@@ -130,8 +130,8 @@ Tilemap.prototype.draw = function(camera) {
 	if (this.columnOffset != null){
 		yOffset = this.columnOffset.y;
 
-		numRows = ceil(size.y / yOffset);
-		numCols = ceil(size.x / this.columnOffset.x);
+		numRows = Math.ceil(size.y / yOffset);
+		numCols = Math.ceil(size.x / this.columnOffset.x);
 
 		var angle = Math.atan2(this.columnOffset.y, this.columnOffset.x);
 
@@ -155,19 +155,19 @@ Tilemap.prototype.draw = function(camera) {
 		// var horizontal = this.tilewidth * sin;
 
 		minTile = {
-		    row: floor(minPixel.y / vertical),
-	        col: floor(minPixel.x / horizontal)
+		    row: Math.floor(minPixel.y / vertical),
+	        col: Math.floor(minPixel.x / horizontal)
 		};
 
 	} else {
 		yOffset = 0;
 
-		numRows = ceil(size.y / this.tileheight);
-		numCols = ceil(size.x / this.tilewidth);
+		numRows = Math.ceil(size.y / this.tileheight);
+		numCols = Math.ceil(size.x / this.tilewidth);
 
 		minTile = {
-			row: floor(minPixel.x / this.tilewidth),
-			col: floor(minPixel.y / this.tileheight)
+			row: Math.floor(minPixel.x / this.tilewidth),
+			col: Math.floor(minPixel.y / this.tileheight)
 		};
 	}
 
@@ -211,11 +211,12 @@ Tilemap.prototype.draw = function(camera) {
 				tileCol >= 0 && tileCol < this.mapwidth)
 			{
 				// determines tile index in tilemap
-				xidx = this.getTile(tx, ty).xidx;
-				yidx = this.getTile(tx, ty).yidx;
+				var tile = this.getTile(tileCol, tileRow);
+				xidx = tile.xidx;
+				yidx = tile.yidx;
 
 				ctx.save();
-				ctx.transform(1, 0, 0, -1, tx, ty + 1);
+				ctx.transform(1, 0, 0, -1, tileCol, tileRow + 1);
 				// draws tile on screen
 				var x;
 				var y;

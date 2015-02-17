@@ -80,11 +80,12 @@ module.exports = {
 
 This build.js file will translate png and jpg images using loadImage and wav and ogg files using loadAudio.
 
-```
-###Tilemap.js Usage
+##Tilemap.js Usage
 
 Require Tilemap.js in your code
-  var Tilemap = require('sald:Tilemap.js');
+```
+var Tilemap = require('sald:Tilemap.js');
+```  
 
 Initilize Tilemap library using load
   Tilemap(img, map, tilW, tilH, tilR, tilC, mapW, mapH)

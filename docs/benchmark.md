@@ -16,14 +16,14 @@ console.log(benchmark(myReallySlowFunction, {iterations: 1000, timeout: 10}));
 ```
 
 ##Specs
-`function benchmark(fn,opts)`<br>
-*Parameters*
-	`fn {function}` the function to benchmark
-	`opts {object}` the options object which specifies iterations, timeout(ms), or both
-<br>
-*Returns*
-	`avg` average runtime for each call to fn
-	`min` minimum runtime for each call to fn
-	`total` total time it takes to run every iteration of fn
-	`iters` total number of times fn executed
-<br>
+###Function
+`function benchmark(fn,opts)`
+###Parameters
+	| `fn {function}` the function to benchmark
+	| `opts {object}` the options object which specifies iterations, timeout(ms), or both
+
+###Returns
+	| `avg` average runtime for each call to fn
+	| `min` minimum runtime for each call to fn
+	| `total` total time it takes to run every iteration of fn
+	| `iters` total number of times fn executed

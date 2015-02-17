@@ -79,3 +79,12 @@ module.exports = {
 ```
 
 This build.js file will translate png and jpg images using loadImage and wav and ogg files using loadAudio.
+
+
+##Libraries
+
+- [mainloop.js](sald/mainloop.js) [docs](docs/mainloop.md) provides a basic mainloop.
+- [benchmark.js](sald/benchmark.js) [docs](docs/benchmark.md) contains utility functions for benchmarking.
+- [collide.js](sald/collide.js) [docs](docs/collide.md) contains collision checking functions.
+- [Sprite.js](sald/Sprite.js) [docs](docs/Sprite.md) is a class that wraps spritesheets and makes it easy to select frames and animations.
+- [Tilemap.js](sald/Tilemap.js) [docs](docs/Tilemap.md) is a class that wraps maps made of image tiles.

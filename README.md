@@ -41,8 +41,14 @@ function gradientTransform(param) {
   return 'var img = new Image(); img.src = ' + base64Data + '; module.exports = img;';
 }
 
-function unownLoader(filepath, rootpath) {
+function unownCanon(filepath, rootpath) {
   // rootpath is the name of the folder where the require is called. Useful for relative require parsing, using _path.join_
+  canonicalName = someTransformation();
+  return canonicalName;
+}
+
+function unownLoader(filepath) {
+  // filepath passed is the resule of unownCanon
   var someJsTxt = something //your loader
   return 'module.exports = ' + someJsTxt;
 }
@@ -64,8 +70,11 @@ module.exports = {
       canonicalFunc: gradientCanon,
       transformFunc: gradientTransform
     },
-    '.unown': unownLoader
-  }
+    '.unown': { // If a custom canonicalization is needed
+      canonicalFunc: unownCanon,
+      transformFunc: unownLoader
+    },
+    '.unown': unownLoader // If no custom canonicalization is needed for this type
 };
 ```
 

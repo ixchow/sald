@@ -42,24 +42,24 @@ Tilemap.prototype.getTilesByTag = function(tag){
 
 // returns the tile { name , tags[] , xidx, yidx} at location (x,y)
 Tilemap.prototype.getTile = function(x, y){
-	return this.map[y * this.mapwidth + x];
+	return this.map[(y * this.mapwidth) + x];
 }
 // adds a tag to the tile at x, y in the map
 Tilemap.prototype.addTag = function(x, y, tag){
-	this.map[y * this.mapwidth + x].tags.push(tag);
+	this.map[(y * this.mapwidth) + x].tags.push(tag);
 }
 // removes a tag from a tile at (x, y) in the map
 Tilemap.prototype.removeTag = function(x, y, tag){
-	var idx = y * this.mapwidth + x;
+	var idx = (y * this.mapwidth) + x;
 	this.map[idx].tags = this.map[idx].tags.filter(function(element){return element != tag;});
 }
 // removes all tags from a tile at (x, y) in the map
 Tilemap.prototype.clearTags = function(x, y){
-	this.map[y * this.mapwidth + x].tags = [];
+	this.map[(y * this.mapwidth) + x].tags = [];
 }
 // replaces array of tags with new array of tags on the map
 Tilemap.prototype.setTags = function(x, y, tags){
-	this.tiles[y * this.width + x].tags = tags;
+	this.tiles[(y * this.width) + x].tags = tags;
 }
 
 // initialization function, called on Tilemap object creation
@@ -75,7 +75,11 @@ Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH)
                [5, 6, 7, 8]
                [9,10,11,12]
                [13,14,15,16]]*/
-            this.map[(i * mapW) + j] = map[i][j];
+            var idx = map[i][j];
+            var x = idx % mapW;
+            var y = Math.floor(idx / mapH);
+            
+            this.map[(i * mapW) + j] = {xidx:x, yidx:y};
         }
     }
     this.tilewidth = tilW;
@@ -214,7 +218,11 @@ Tilemap.prototype.draw = function(camera) {
 				var tile = this.getTile(tileCol, tileRow);
 				xidx = tile.xidx;
 				yidx = tile.yidx;
-
+                
+                console.log(xidx);
+                console.log(yidx);
+                console.log("\n");
+                
 				ctx.save();
 				ctx.transform(1, 0, 0, -1, tileCol, tileRow + 1);
 				// draws tile on screen
@@ -224,7 +232,7 @@ Tilemap.prototype.draw = function(camera) {
 				x = xidx * (this.tilewidth + perspectiveDelta.x);
 				y = yidx * (this.tileheight + perspectiveDelta.y);
 				
-				ctx.drawImage(this.img, x, y, this.tilewidth, this.tileheight, 0, 0, 1, 1);
+				ctx.drawImage(this.img, xidx * this.tilewidth, yidx * this.tileheight, this.tilewidth, this.tileheight, 0, 0, 1, 1);
 				ctx.restore();
 			}
 		}

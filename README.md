@@ -82,31 +82,23 @@ This build.js file will translate png and jpg images using loadImage and wav and
 
 ##Tilemap.js Usage
 
-Require Tilemap.js in your code
+###Require Tilemap.js in your code
 ```
 var Tilemap = require('sald:Tilemap.js');
 ```  
 
-Initilize Tilemap library using load
+###Initilize Tilemap library using load
+```
+Tilemap(img, map, tilW, tilH, tilR, tilC, mapW, mapH)
+img  = tilemap image
+map  = 2d map of which location to draw which tile
+tilW = pixel width of individual tile
+tilH = pixel height of individual tile 
+tilR = Width of tilemap in terms of tiles
+tilC = Height of tilemap in terms of tiles
+mapW = Width of world map
+mapH = Height of world map
+```
 
-  Tilemap(img, map, tilW, tilH, tilR, tilC, mapW, mapH)
-
-  img  = tilemap image
-
-  map  = 2d map of which location to draw which tile
-
-  tilW = pixel width of individual tile
-
-  tilH = pixel height of individual tile 
-
-  tilR = Width of tilemap in terms of tiles
-
-  tilC = Height of tilemap in terms of tiles
-
-  mapW = Width of world map
-
-  mapH = Height of world map
-
-Draw...
-
-  Camera...
+###Draw...
+Camera...

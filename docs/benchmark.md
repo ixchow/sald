@@ -20,6 +20,10 @@ console.log(benchmark(myReallySlowFunction, {iterations: 1000, timeout: 10}));
 ###Function
 `function benchmark(fn,opts)`
 
+###Description
+benchmark will run fn a number of times specified by opts, either in iterations or elapsed time,
+and return stats about the runtime performance of that fn.
+
 ###Parameters
 
 | Param | Type     | Description                                                         |

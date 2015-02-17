@@ -7,7 +7,6 @@ var heroImg = require('../img/spritesheet.png');
 
 all the spritesheet objs to be animated have to be strictly defined as below 
 
-`<code>`
 var heroSprite = new sprite(heroImg, {
 	'walk' : {
 		x:0,y:0,

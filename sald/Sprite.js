@@ -1,3 +1,4 @@
+ 
 /*
  * Sprite - prototype for sprite object
  * Possible arguments
@@ -8,20 +9,13 @@
  */
 var Sprite = function (arg1,arg2) {
   var data;
+
   // arg1 is img
   if(arg1 instanceof HTMLImageElement) {
-    data = normalize_options(arg2,arg1);
-  }
-  // arg1 is imgs
-  else if(Array.isArray(arg1)) {
-    data = normalize_options(arg2);
-    deref_images(arg1,data);
-  }
-  // arg1 is opts
-  else {
-    data = normalize_options(arg1);
+    data = normalize_options(arg2,arg1); //the final data object would have a list of animations and the image. 
   }
   this.data = data;
+  this.animators = createAnimators(data);
 }
 
 /*
@@ -37,74 +31,37 @@ function exists(x) {
  */
 function normalize_options(opts,img) {
   var data = {
-    animations: {}
+    animations: {} //would populate this field after we fetch the list of anims, 'walk' ,'run' etc
   };
 
   if(img) {
     data.img = img;
   }
 
-  var anims = opts.animations || opts;
-
+  var anims = opts;
+  
   // loop each animation in opts
   for(var name in anims) {
-    var anim = anims[name];
-    // if opts is just frames, store
-    if(Array.isArray(anim)) {
-      data.animations[name] = {frames:anim};
-    }
-    // if opts specifies how to repeat
-    else if (exists(anim.size)) {
-      anim.img = anim.img || data.img;
-      anim.frames = expand_repeat_opts(anim);
+    var anim = anims[name];  //anim is the string passed in the object definition, 'walk', 'run'
+    if (exists(anim.size)) {
+      anim.img = data.img;
+      anim.frames = expand_repeat_opts(anim); //anim.frames is an array of individual sprites for that particular animation.
       data.animations[name] = anim;
     }
-    // if opts specifies frames explicitly
-    else if(exists(anim.frames)) {
-      data.animations[name] = anim;
-    }
-    // not supported
     else {
-      //console.log(opts);
       throw new Error(name + ' did not match any valid animation definitions');
     }
   }
-
   return unroll_draw_data(data);
 }
 
-/*
- * deref_images - used if an array of images was provided, turns the value of
- *  img keys to a reference to that image if it is an index into the imgs array
- */
-function deref_images(imgs,opts) {
-  function deref(imgs,x) {
-    if(typeof x.img == 'number') {
-      x.img = imgs[x.img]
-    }
-  }
-
-  deref(imgs,opts);
-  for(var name in opts.animations) {
-    var anim = opts.animations[name];
-    deref(imgs,anim);
-    for(var i = 0; i < anim.frames.length; i++) {
-      deref(imgs,anim.frames[i]);
-    }
-  }
-}
-
-/*
- * expand_repeat_opts: take a frame definition with size (numeber of frames)
- *  specified, and turn it into each individual frame
- */
 function expand_repeat_opts(opts) {
   var frames = [];
 
-  // loop by size
+  // loop by size, collect each individual sprites and store it in the frames array
   for(var i = 0; i < opts.size; i++) {
     // increment location frame is read from
-    var x = opts.x + i*opts.width;
+    var x = opts.x + i*opts.width; 
     var y = opts.y;
 
     // create new frame
@@ -157,34 +114,135 @@ function propogate_draw_data(prev,next) {
   }
 }
 
+function createAnimators(drawData)
+{
+    var animators = {};
+    for (var name in drawData.animations)
+    {
+        animators[name] = new Animator(drawData.animations[name].frames);
+    }
+    return animators;
+}
 /*
  * draw - draw the sprite animation specified
- * anim: current animation to draw
- * frame: frame of animation
+ * anim: animation name
  * x: x position in world space
  * y: y position in world space
+ * angle: rotate by (in degrees)
+ * scalex: x scale of sprite
+ * scaley: y scale of sprite
+ * anchorx: x anchor value (0-1)
+ * anchory: y anchor value (0-1)
  */
-Sprite.prototype.draw = function (anim,frame,x,y) {
-  var drawData = this.data.animations[anim].frames[frame];
-  //console.log(drawData);
+Sprite.prototype.draw = function (anim, x, y, angle, scalex, scaley, anchorx, anchory) {
+    var drawData = this.animators[anim].getNextFrameData();
 
+console.log(drawData.width);
   //draw this stuff
-  if(window.ctx) {
-    window.ctx.save();
+  if(window.sald.ctx) {
+    window.sald.ctx.save();
+
+    //rotate(x, y, drawData, angle, anchorx, anchory);
 
     //locally flip the 'y' axis since images draw with upper-left origins:
-    window.ctx.transform(1,0,
+    window.sald.ctx.transform(1, 0,
       0,-1,
-      Math.round(x*drawData.width - 0.5 * drawData.width)/drawData.width,
-      Math.round(y*drawData.height - 0.5 * drawData.height)/drawData.height
+      Math.round(x*drawData.width - anchorx*drawData.width)/drawData.width,
+      Math.round(y*drawData.height - anchory*drawData.height)/drawData.height
     );
 
-    window.ctx.drawImage(drawData.img,
-      drawData.x, drawData.y,
-      drawData.width, drawData.height,
-      0,0,1,1);
-    window.ctx.restore();
+    window.sald.ctx.drawImage(drawData.img, drawData.x, drawData.y, 
+            drawData.width, drawData.height, 
+            0, 0,
+            scalex, scaley);
+    window.sald.ctx.restore();
   }
 }
 
 module.exports = Sprite;
+
+function rotate(x, y, drawData, angle, anchorx, anchory)
+{
+    var rotationPointx = x - anchorx * drawData.width;
+    var rotationPointy = y - anchory * drawData.height;
+
+    rotationPointx = Math.round(x*drawData.width - anchorx*drawData.width)/drawData.width;
+    rotationPointy = Math.round(y*drawData.height - anchory*drawData.height)/drawData.height;
+
+    window.sald.ctx.translate(rotationPointx, rotationPointy);
+    window.sald.ctx.rotate(angle * Math.PI / 180);
+    window.sald.ctx.translate(-rotationPointx, -rotationPointy);
+}
+
+/*
+* Animator framework for handling animations in a simpler way.
+* The user doesn't have to handle sending each frame every draw call.
+* They just have to call the draw function with the animation the want
+* to run and this object gives us what the next frame in the animation should be.
+* Also provides neat features like animation speed, looping functionality
+* and stop feature where it wont let the animation run anymore.
+*/
+function Animator(frames)
+{
+    this.isStopped = false;
+    this.isLooping = false;
+    // Frame being drawn
+    this.currentFrame = 0;
+    // The frame data for the particular animation
+    this.animationFrames = frames;
+
+    // The default speed at which to run the animation
+    var animationSpeed = 60;
+
+    // Convert the animation speed to "number of frames to skip"
+    // before we move on to the next frame in the animation set
+    this.animationSpeed = Math.floor(60 / animationSpeed);
+
+    // A counter for skipping frames (related to animation speed)
+    this.frameSkipCounter = 0;
+}
+
+Animator.prototype.loop = function (loop) {
+    this.isLooping = loop;
+}
+
+Animator.prototype.speed = function(animationSpeed) {
+    if (animationSpeed == 0) animationSpeed = 60;
+    this.animationSpeed = Math.floor(60 / animationSpeed);
+}
+
+Animator.prototype.getNextFrameData = function () {
+    if (this.isStopped)
+    {
+        // do nothing. Dont update animation frame
+        // or reset the animation
+        this.currentFrame = 0;
+        this.frameSkipCounter = 0;
+        this.isStopped = false;
+        return this.animationFrames[this.currentFrame];
+    }
+    if(this.frameSkipCounter == this.animationSpeed)
+    {
+        this.currentFrame++;
+        this.frameSkipCounter = 0;
+    }
+    this.frameSkipCounter++;
+
+    if (this.animationFrames.length == this.currentFrame)
+    {
+        if (this.isLooping) {
+            this.currentFrame = 0;
+        } else {
+            // Set the frame to the last frame in the animation
+            // if looping is disabled
+            this.currentFrame--;
+        }
+    }
+
+    return this.animationFrames[this.currentFrame];
+}
+
+Animator.prototype.stop = function() {
+  this.isLooping = false;
+  this.isStopped = true;
+}

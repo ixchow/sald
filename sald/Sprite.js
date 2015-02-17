@@ -174,14 +174,31 @@ function rotate(x, y, drawData, angle, anchorx, anchory)
     window.sald.ctx.translate(-rotationPointx, -rotationPointy);
 }
 
+/*
+* Animator framework for handling animations in a simpler way.
+* The user doesn't have to handle sending each frame every draw call.
+* They just have to call the draw function with the animation the want
+* to run and this object gives us what the next frame in the animation should be.
+* Also provides neat features like animation speed, looping functionality
+* and stop feature where it wont let the animation run anymore.
+*/
 function Animator(frames)
 {
     this.isStopped = false;
-  this.isLooping = false;
+    this.isLooping = false;
+    // Frame being drawn
     this.currentFrame = 0;
+    // The frame data for the particular animation
     this.animationFrames = frames;
+
+    // The default speed at which to run the animation
     var animationSpeed = 60;
+
+    // Convert the animation speed to "number of frames to skip"
+    // before we move on to the next frame in the animation set
     this.animationSpeed = Math.floor(60 / animationSpeed);
+
+    // A counter for skipping frames (related to animation speed)
     this.frameSkipCounter = 0;
 }
 
@@ -211,7 +228,7 @@ Animator.prototype.getNextFrameData = function () {
     }
     this.frameSkipCounter++;
 
-    if (this.animationFrames.length-1 == this.currentFrame)
+    if (this.animationFrames.length == this.currentFrame)
     {
         if (this.isLooping) {
             this.currentFrame = 0;

@@ -22,22 +22,29 @@ recommended to do this in the sald directory.
 ##build.js
 The build.js file must be in the current working directory when calling sald build.
 This file should export an object which specifies the output location, entry point, and the method for handling custom file types.
+By default, Sald handles transformations for common types, like `.js`, `.json`, `.png`, `.jpg`, `.wav`, `.ogg`. You may override these with your own handlers if you wish. All other filetypes will need a handler implemented in this `build.js`.
+
+Sald can also handle `colon`ical transforms, specified like `gradient:#000-#fff`, for which you must specify a function which generates a JS block that exports the expected return value.
+
+Each transform can also take the object form `{canonicalFunc: aFunc, tranformFunc: bFunc}`, where `bFunc` is what you used before, and `aFunc` is used to determine the canonical name of the parameter. This is used to ensure there is no duplication of resolved `require`s in the final output html file. If the transform is not in this object form, then a default canonical function is assumed (direct string comparison for `colon`icals, and normalized path comparison for file extension types).
 
 ###Example build.js
 ```
-// Load an image file from file = {name,data}
-function loadImage(file) {
-  var script = [
-    'var img = new Image();',
-    'img.src = "data:' + this.mime + ';' + this.encoding + ',' + file.data + '";',
-    'module.exports = img;'
-  ].join('\n');
-  return script;
+function gradientCanon(param) {
+  // some conversion here
+  // ex: 'black-white' will be converted to '#000-#fff'
+  return convertedString;
 }
 
-// Load an audio file from file = {name,data}
-function loadAudio(file) {
-  return 'module.exports = new Audio("data:' + this.mime + ';' + this.encoding + ',' + file.data + '");';
+function gradientTransform(param) {
+  // some external imagemagick call
+  return 'var img = new Image(); img.src = ' + base64Data + '; module.exports = img;';
+}
+
+function unownLoader(filepath, rootpath) {
+  // rootpath is the name of the folder where the require is called. Useful for relative require parsing, using _path.join_
+  var someJsTxt = something //your loader
+  return 'module.exports = ' + someJsTxt;
 }
 
 // Export build options
@@ -52,33 +59,17 @@ module.exports = {
     html : 'build.html'  //location to output final built project
   },
   // Options for each file type
-  files : {
-    '.jpg' : {
-      mime : 'image/jpg',   // mime type, used by loadImage
-      encoding : 'base64',  // encode type, used by sald, defaults to utf8
-      load: loadImage       // function which translates to node-style javascript
-                            // should be of type {name,data} -> string
+  transforms : {
+    'gradient:': {
+      canonicalFunc: gradientCanon,
+      transformFunc: gradientTransform
     },
-    '.png' : {
-      mime : 'image/png',
-      encoding : 'base64',
-      load: loadImage
-    },
-    '.ogg' : {
-      mime : 'audio/ogg',
-      encoding : 'base64',
-      load: loadAudio
-    },
-    '.wav' : {
-      mime : 'audio/vnd.wave',
-      encoding : 'base64',
-      load: loadAudio
-    }
+    '.unown': unownLoader
   }
 };
 ```
 
-This build.js file will translate png and jpg images using loadImage and wav and ogg files using loadAudio.
+This build.js file now knows what to do with a `require('../pokedex/pokemon87.unown');` or `require('gradient:black-white')`.
 
 
 ##Libraries

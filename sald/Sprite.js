@@ -142,7 +142,7 @@ console.log(drawData.width);
   if(window.sald.ctx) {
     window.sald.ctx.save();
 
-        //rotate(x, y, drawData, angle, anchorx, anchory);
+    //rotate(x, y, drawData, angle, anchorx, anchory);
 
     //locally flip the 'y' axis since images draw with upper-left origins:
     window.sald.ctx.transform(1, 0,
@@ -232,6 +232,10 @@ Animator.prototype.getNextFrameData = function () {
     {
         if (this.isLooping) {
             this.currentFrame = 0;
+        } else {
+            // Set the frame to the last frame in the animation
+            // if looping is disabled
+            this.currentFrame--;
         }
     }
 

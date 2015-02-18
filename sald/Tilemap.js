@@ -171,8 +171,8 @@ Tilemap.prototype.draw = function(camera) {
 	} else {*/
 		//yOffset = 0;
 
-		numRowsOnScreen = Math.ceil(size.y / this.tileheight);
-		numColsOnScreen = Math.ceil(size.x / this.tilewidth);
+		numRowsOnScreen = Math.ceil(size.y / this.tileheight) + 1;
+		numColsOnScreen = Math.ceil(size.x / this.tilewidth) + 1;
 	//}
 
 	// gets context
@@ -195,8 +195,8 @@ Tilemap.prototype.draw = function(camera) {
     
 //    console.log(minPixel);
     
-	for (var row = 0; row < 1; row++){
-		for (var col = 0; col < 1; col++){
+	for (var row = 0; row < numRowsOnScreen; row++){
+		for (var col = 0; col < numColsOnScreen; col++){
 			//var dRow;
 			//var dCol;
 /*
@@ -208,7 +208,7 @@ Tilemap.prototype.draw = function(camera) {
 				dCol = 0;
 			}
 */
-			var tileRow = topLeftTile.row + row;// + dRow;
+			var tileRow = topLeftTile.row - row;// - dRow;
 			var tileCol = topLeftTile.col + col;// + dCol;
 
 			var xidx = null;

@@ -1,5 +1,5 @@
-var Tilemap = function(img, map, tilW, tilH, tilR, tilC, mapW, mapH){
-	this.load(img, map, tilW, tilH, tilR, tilC, mapW, mapH);
+var Tilemap = function(img, map, tilW, tilH, tilR, tilC, mapW, mapH, def){
+	this.load(img, map, tilW, tilH, tilR, tilC, mapW, mapH, def);
 }
 // VARIABLES
 // width of the onscreen map in tiles
@@ -91,8 +91,10 @@ Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH,
     this.tilecols = tilC;
     this.mapwidth = mapW;
     this.mapheight = mapH;
-    this.defaultx = def % tilC;
-    this.defaulty = Math.floor(def/tilR);
+    this.defaultx = def % this.tilecols;
+    this.defaulty = Math.floor(def/this.tilerows);
+    console.log(this.defaultx);
+    console.log(this.defaulty);
 }
 
 function roundToZero(number){
@@ -226,8 +228,8 @@ Tilemap.prototype.draw = function(camera) {
 				yidx = tile.yidx;
             }
             else{
-                xidx = 1;//this.defaultx;
-                yidx = 1;//this.defaulty;
+                xidx = this.defaultx;
+                yidx = this.defaulty;
             }
 
                 

@@ -26,7 +26,7 @@ Tilemap.prototype.defaultTileY = 0;
 
 // Column offset {x : xOffset, y : yOffset};
 // Tilemap.prototype.columnOffset = null;
-Tilemap.prototype.columnOffset = null;//{x : 20, y : 0};
+Tilemap.prototype.columnOffset = {x : 26, y : 45};
 
 // FUNCTIONS
 // runs through tilemap, returns array of tiles with given tag
@@ -125,11 +125,11 @@ Tilemap.prototype.draw = function(camera) {
 
 	var switchRowsAndCols = false;
 
-	if (this.columnOffset != null){
+	if (this.columnOffset !== null){
 		yOffset = this.columnOffset.y;
 
-		numRowsOnScreen = Math.ceil(size.y / yOffset);
-		numColsOnScreen = Math.ceil(size.x / this.columnOffset.x);
+		numRowsOnScreen = Math.ceil(size.y / (yOffset%this.tileheight)) + 1;
+		numColsOnScreen = Math.ceil(size.x / this.columnOffset.x) + 1;
 
 		var angle = Math.atan2(this.columnOffset.y, this.columnOffset.x);
 
@@ -138,20 +138,23 @@ Tilemap.prototype.draw = function(camera) {
 		var vertical;
 		var horizontal;
 
-		if (Math.abs(sin) > 0.5){
-			// invert rows and cols in way to draw
-			sin = 1 - sin;
-			switchRowsAndCols = true;
+		// if (Math.abs(sin) > 0.5){
+		// 	// invert rows and cols in way to draw
+		// 	sin = 1 - sin;
+		// 	switchRowsAndCols = true;
 
-            // TODO fix this for ISOMETRIC!!!
-			vertical = this.columnOffset.y;//this.tileheight;
-			horizontal = this.tilewidth * (1 - sin);
-		} else {
+  //           // TODO fix this for ISOMETRIC!!!
+		// 	vertical = this.columnOffset.y;//this.tileheight;
+		// 	horizontal = this.tilewidth * (1 - sin);
+		// 	console.log("USE 1");
+		// } else {
 			vertical = this.tileheight * (1 - sin);
 			horizontal = this.columnOffset.x;//this.tilewidth;
-		}
 
-		var horizontal = this.tilewidth * sin;
+		// 	console.log("USE 2");
+		// }
+
+		// var horizontal = this.tilewidth * sin;
 
 		// minTile = {
 		//     row: this.mapheight - Math.floor(minPixel.y / vertical),
@@ -169,6 +172,8 @@ Tilemap.prototype.draw = function(camera) {
 	var ctx = window.sald.ctx;
 	var perspectiveDelta;
 
+	var startingRow;
+
 	if (this.columnOffset != null){
 
 		/* cols have an expected tilewidth offset in the x direction, 
@@ -178,27 +183,50 @@ Tilemap.prototype.draw = function(camera) {
 		var yDelta = this.columnOffset.y;
 
 		perspectiveDelta = {x: xDelta, y: yDelta};
+
+		startingRow = -1;
 	} else {
 		perspectiveDelta = {x: 0, y: 0};
+		startingRow = 0;
 	}
     
-	for (var row = 0; row < numRowsOnScreen; row++){
+	for (var row = startingRow; row < numRowsOnScreen; row++){
 		for (var col = 0; col < numColsOnScreen; col++){
 			var dRow;
 			var dCol;
 
-			if (this.tileheight == 0){
-				dRow = 0;
-				dCol = 0;
-			} else if (switchRowsAndCols){
-				dRow = 0;
-				dCol = roundToZero((yOffset*col) / this.tileheight);
+			var dRowF = 0;
+			var dColF = 0;
+
+			if (this.columnOffset !== null){
+				if (this.tileheight == 0){
+					dRow = 0;
+					dCol = 0;
+				} else if (switchRowsAndCols){
+					dRow = 0;
+					dColF = (yOffset*col) / this.columnOffset.y;
+					dCol = roundToZero(dColF);
+				} else {
+					dRowF = (yOffset*col) / this.columnOffset.y;
+					dRow = roundToZero(dRowF);
+					dCol = 0;
+				}
 			} else {
-				dRow = roundToZero((yOffset*col) / this.tileheight);
-				dCol = 0;
+				if (this.tileheight == 0){
+					dRow = 0;
+					dCol = 0;
+				} else if (switchRowsAndCols){
+					dRow = 0;
+					dColF = (yOffset*col) / this.tileheight;
+					dCol = roundToZero(dColF);
+				} else {
+					dRowF = (yOffset*col) / this.tileheight;
+					dRow = roundToZero(dRowF);
+					dCol = 0;
+				}
 			}
 
-			var tileRow = topLeftTile.row - row - dRow;
+			var tileRow = topLeftTile.row - row + dRow;
 			var tileCol = topLeftTile.col + col + dCol;
 
 			var xidx = null;
@@ -217,18 +245,17 @@ Tilemap.prototype.draw = function(camera) {
                 yidx = this.defaultTileY;
             }
 
-                
-				ctx.save();
-				ctx.transform(1, 0, 0, -1, tileCol, tileRow + 1);
-				// draws tile on screen
-				var x;
-				var y;
+			ctx.save();
+			ctx.transform(1, 0, 0, -1, tileCol, tileRow + 1);
+			// draws tile on screen
+			var x;
+			var y;
 
-				x = xidx * (this.tilewidth + perspectiveDelta.x);
-				y = yidx * (this.tileheight + perspectiveDelta.y);
-				
-				ctx.drawImage(this.img, xidx * this.tilewidth, yidx * this.tileheight, this.tilewidth, this.tileheight, 0, 0, 1, 1);
-				ctx.restore();
+			x = xidx * (this.tilewidth + perspectiveDelta.x);
+			y = yidx * (this.tileheight + perspectiveDelta.y);
+			
+			ctx.drawImage(this.img, xidx * this.tilewidth, yidx * this.tileheight, this.tilewidth, this.tileheight, dColF, dRowF, 1, 1);
+			ctx.restore();
 			
 		}
 	}

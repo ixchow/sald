@@ -1,5 +1,5 @@
-var Tilemap = function(img, map, tilW, tilH, tilR, tilC, mapW, mapH, def){
-	this.load(img, map, tilW, tilH, tilR, tilC, mapW, mapH, def);
+var Tilemap = function(img, map, tilW, tilH, tilR, tilC, mapW, mapH, defaultTile){
+	this.load(img, map, tilW, tilH, tilR, tilC, mapW, mapH, defaultTile);
 }
 // VARIABLES
 // width of the onscreen map in tiles
@@ -18,8 +18,10 @@ Tilemap.prototype.tilecols = 0;
 Tilemap.prototype.map = [];
 // URL for the tilemap source image
 Tilemap.prototype.img = null;
-Tilemap.prototype.defaultx = 1;
-Tilemap.prototype.defaulty = 1;
+// Col location of default tile in Tilemap
+Tilemap.prototype.defaultTileX = 0;
+// Row location of default tile in Tilemap
+Tilemap.prototype.defaultTileY = 0;
 
 
 // Column offset {x : xOffset, y : yOffset};
@@ -66,7 +68,7 @@ Tilemap.prototype.setTags = function(x, y, tags){
 }
 
 // initialization function, called on Tilemap object creation
-Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH, def) {
+Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH, defaultTile) {
     this.img = img;
 	/*var imgSrc = this.img;
 	this.img = new Image();
@@ -91,10 +93,8 @@ Tilemap.prototype.load = function (img, map, tilW, tilH, tilR, tilC, mapW, mapH,
     this.tilecols = tilC;
     this.mapwidth = mapW;
     this.mapheight = mapH;
-    this.defaultx = def % this.tilecols;
-    this.defaulty = Math.floor(def/this.tilerows);
-    console.log(this.defaultx);
-    console.log(this.defaulty);
+	this.defaultTileX = defaultTile % tilC;
+	this.defaultTileY = Math.floor(defaultTile/tilR);
 }
 
 function roundToZero(number){
@@ -223,8 +223,8 @@ Tilemap.prototype.draw = function(camera) {
 				yidx = tile.yidx;
             }
             else{
-                xidx = this.defaultx;
-                yidx = this.defaulty;
+                xidx = this.defaultTileX;
+                yidx = this.defaultTileY;
             }
 
                 

@@ -26,7 +26,7 @@ Tilemap.prototype.defaultTileY = 0;
 
 // Column offset {x : xOffset, y : yOffset};
 // Tilemap.prototype.columnOffset = null;
-Tilemap.prototype.columnOffset = {x : 0, y : 12};
+Tilemap.prototype.columnOffset = {x : -5, y : 0};
 
 // FUNCTIONS
 // runs through tilemap, returns array of tiles with given tag
@@ -192,14 +192,15 @@ Tilemap.prototype.draw = function(camera) {
 					dRow = 0;
 					dCol = 0;
 				} else {
-					dRowF = (yOffset*(col + topLeftTile.col)) / this.tileheight;//this.columnOffset.y;
+					dRowF = (yOffset * (col + topLeftTile.col)) / this.tileheight;
 					dRow = roundToZero(dRowF);
 
 					if (this.columnOffset.x === 0){
 						dColF = 0;
 					} else {
-						dColF = (this.columnOffset.x * col) / this.tilewidth;
+						dColF = (this.columnOffset.x * topLeftTile.row) / this.tilewidth;
 					}
+
 					dCol = 0;
 				}
 			} else {
@@ -214,7 +215,7 @@ Tilemap.prototype.draw = function(camera) {
 			}
 
 			var tileRow = topLeftTile.row - row + dRow;
-			var tileCol = topLeftTile.col + col + dCol;
+			var tileCol = topLeftTile.col + col - dCol;
 
 			var xidx = null;
 			var yidx = null;
@@ -235,11 +236,6 @@ Tilemap.prototype.draw = function(camera) {
 			ctx.save();
 			ctx.transform(1, 0, 0, -1, tileCol, tileRow + 1);
 			// draws tile on screen
-			var x;
-			var y;
-
-			x = xidx * (this.tilewidth + perspectiveDelta.x);
-			y = yidx * (this.tileheight + perspectiveDelta.y);
 			
 			ctx.drawImage(this.img, xidx * this.tilewidth, yidx * this.tileheight, this.tilewidth, this.tileheight, dColF, dRowF, 1, 1);
 			ctx.restore();

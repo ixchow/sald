@@ -26,7 +26,7 @@ Tilemap.prototype.defaultTileY = 0;
 
 // Column offset {x : xOffset, y : yOffset};
 // Tilemap.prototype.columnOffset = null;
-Tilemap.prototype.columnOffset = {x : -5, y : 0};
+Tilemap.prototype.columnOffset = {x : 0, y : -5};
 
 // FUNCTIONS
 // runs through tilemap, returns array of tiles with given tag
@@ -110,6 +110,14 @@ function roundToZero(number){
 Tilemap.prototype.draw = function(camera) {
 	var size = window.sald.size;
 
+	// Correct camera units to isometric dimensions
+	if (this.columnOffset !== null
+		&& this.columnOffset.x !== -this.tilewidth 
+		&& this.columnOffset.y !== -this.tileheight){
+		camera.x = (camera.x * this.tilewidth) / (this.tilewidth + this.columnOffset.x);
+		// camera.y = (camera.y * this.tileheight) / (this.tileheight + this.columnOffset.y);
+	}
+
 	var topLeftTile = {
 		col: Math.floor(camera.x - ((size.x/this.tilewidth) / 2) - 1),
 		row: Math.floor(camera.y + ((size.y/this.tileheight) / 2))
@@ -178,7 +186,7 @@ Tilemap.prototype.draw = function(camera) {
 		perspectiveDelta = {x: 0, y: 0};
 		startingRow = 0;
 	}
-    
+
 	for (var row = startingRow; row < numRowsOnScreen; row++){
 		for (var col = 0; col < numColsOnScreen; col++){
 			var dRow;
@@ -195,13 +203,14 @@ Tilemap.prototype.draw = function(camera) {
 					dRowF = (yOffset * (col + topLeftTile.col)) / this.tileheight;
 					dRow = roundToZero(dRowF);
 
+					dCol = 0;
+
 					if (this.columnOffset.x === 0){
 						dColF = 0;
 					} else {
-						dColF = (this.columnOffset.x * topLeftTile.row) / this.tilewidth;
+						dColF = (this.columnOffset.x * (col + topLeftTile.col)) / this.tilewidth;
+						dCol = 0;
 					}
-
-					dCol = 0;
 				}
 			} else {
 				if (this.tileheight === 0){

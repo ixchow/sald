@@ -25,8 +25,7 @@ Tilemap.prototype.defaultTileY = 0;
 
 
 // Column offset {x : xOffset, y : yOffset};
-// Tilemap.prototype.columnOffset = null;
-Tilemap.prototype.columnOffset = {x : 0, y : 10};
+Tilemap.prototype.columnOffset = null;
 
 // FUNCTIONS
 // runs through tilemap, returns array of tiles with given tag

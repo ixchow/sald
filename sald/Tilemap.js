@@ -26,7 +26,7 @@ Tilemap.prototype.defaultTileY = 0;
 
 // Column offset {x : xOffset, y : yOffset};
 // Tilemap.prototype.columnOffset = null;
-Tilemap.prototype.columnOffset = {x : 26, y : 45};
+Tilemap.prototype.columnOffset = {x : -10, y : 10};
 
 // FUNCTIONS
 // runs through tilemap, returns array of tiles with given tag
@@ -128,10 +128,12 @@ Tilemap.prototype.draw = function(camera) {
 	if (this.columnOffset !== null){
 		yOffset = this.columnOffset.y;
 
-		numRowsOnScreen = Math.ceil(size.y / (yOffset%this.tileheight)) + 1;
-		numColsOnScreen = Math.ceil(size.x / this.columnOffset.x) + 1;
+		var numColsDenom = this.columnOffset.x + this.tilewidth;
 
-		var angle = Math.atan2(this.columnOffset.y, this.columnOffset.x);
+		numRowsOnScreen = Math.ceil(size.y / this.tileheight) + 1;		
+		numColsOnScreen = Math.ceil(size.x / numColsDenom) + 2;
+
+		var angle = Math.atan2(this.columnOffset.y, this.columnOffset.x + this.tilewidth);
 
 		var sin = Math.sin(angle);
 
@@ -149,7 +151,7 @@ Tilemap.prototype.draw = function(camera) {
 		// 	console.log("USE 1");
 		// } else {
 			vertical = this.tileheight * (1 - sin);
-			horizontal = this.columnOffset.x;//this.tilewidth;
+			horizontal = this.columnOffset.x + this.tilewidth;//this.tilewidth;
 
 		// 	console.log("USE 2");
 		// }
@@ -179,7 +181,7 @@ Tilemap.prototype.draw = function(camera) {
 		/* cols have an expected tilewidth offset in the x direction, 
 		 * and an expected 0 offset vertically
 		*/
-		var xDelta = this.columnOffset.x - this.tilewidth;
+		var xDelta = this.columnOffset.x;
 		var yDelta = this.columnOffset.y;
 
 		perspectiveDelta = {x: xDelta, y: yDelta};
@@ -199,26 +201,24 @@ Tilemap.prototype.draw = function(camera) {
 			var dColF = 0;
 
 			if (this.columnOffset !== null){
-				if (this.tileheight == 0){
+				if (this.tileheight === 0){
 					dRow = 0;
 					dCol = 0;
-				} else if (switchRowsAndCols){
-					dRow = 0;
-					dColF = (yOffset*col) / this.columnOffset.y;
-					dCol = roundToZero(dColF);
 				} else {
-					dRowF = (yOffset*col) / this.columnOffset.y;
+					dRowF = (yOffset*col) / this.tileheight;//this.columnOffset.y;
 					dRow = roundToZero(dRowF);
+
+					if (this.columnOffset.x === 0){
+						dColF = 0;
+					} else {
+						dColF = (this.columnOffset.x * col) / this.tilewidth;
+					}
 					dCol = 0;
 				}
 			} else {
-				if (this.tileheight == 0){
+				if (this.tileheight === 0){
 					dRow = 0;
 					dCol = 0;
-				} else if (switchRowsAndCols){
-					dRow = 0;
-					dColF = (yOffset*col) / this.tileheight;
-					dCol = roundToZero(dColF);
 				} else {
 					dRowF = (yOffset*col) / this.tileheight;
 					dRow = roundToZero(dRowF);

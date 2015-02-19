@@ -26,7 +26,7 @@ Tilemap.prototype.defaultTileY = 0;
 
 // Column offset {x : xOffset, y : yOffset};
 // Tilemap.prototype.columnOffset = null;
-Tilemap.prototype.columnOffset = {x : -10, y : 10};
+Tilemap.prototype.columnOffset = {x : 0, y : 12};
 
 // FUNCTIONS
 // runs through tilemap, returns array of tiles with given tag
@@ -111,7 +111,7 @@ Tilemap.prototype.draw = function(camera) {
 	var size = window.sald.size;
 
 	var topLeftTile = {
-		col: Math.floor(camera.x - ((size.x/this.tilewidth) / 2)),
+		col: Math.floor(camera.x - ((size.x/this.tilewidth) / 2) - 1),
 		row: Math.floor(camera.y + ((size.y/this.tileheight) / 2))
 	};
 	var maxPixel = {
@@ -125,33 +125,20 @@ Tilemap.prototype.draw = function(camera) {
 
 	var switchRowsAndCols = false;
 
-	if (this.columnOffset !== null){
+	if (this.columnOffset !== null || !(this.columnOffset.x === 0 && this.columnOffset.y === 0)){
 		yOffset = this.columnOffset.y;
 
 		var numColsDenom = this.columnOffset.x + this.tilewidth;
 
-		numRowsOnScreen = Math.ceil(size.y / this.tileheight) + 1;		
-		numColsOnScreen = Math.ceil(size.x / numColsDenom) + 2;
+		numRowsOnScreen = Math.ceil(size.y / this.tileheight) + 2;
+		numColsOnScreen = Math.ceil(size.x / numColsDenom) + 4;
 
 		var angle = Math.atan2(this.columnOffset.y, this.columnOffset.x + this.tilewidth);
 
 		var sin = Math.sin(angle);
 
-		var vertical;
-		var horizontal;
-
-		// if (Math.abs(sin) > 0.5){
-		// 	// invert rows and cols in way to draw
-		// 	sin = 1 - sin;
-		// 	switchRowsAndCols = true;
-
-  //           // TODO fix this for ISOMETRIC!!!
-		// 	vertical = this.columnOffset.y;//this.tileheight;
-		// 	horizontal = this.tilewidth * (1 - sin);
-		// 	console.log("USE 1");
-		// } else {
-			vertical = this.tileheight * (1 - sin);
-			horizontal = this.columnOffset.x + this.tilewidth;//this.tilewidth;
+		var vertical = this.tileheight * (1 - sin);;
+		var horizontal = this.columnOffset.x + this.tilewidth;
 
 		// 	console.log("USE 2");
 		// }
@@ -167,7 +154,7 @@ Tilemap.prototype.draw = function(camera) {
 		yOffset = 0;
 
 		numRowsOnScreen = Math.ceil(size.y / this.tileheight) + 1;
-		numColsOnScreen = Math.ceil(size.x / this.tilewidth) + 1;
+		numColsOnScreen = Math.ceil(size.x / this.tilewidth) + 2;
 	}
 
 	// gets context
@@ -205,7 +192,7 @@ Tilemap.prototype.draw = function(camera) {
 					dRow = 0;
 					dCol = 0;
 				} else {
-					dRowF = (yOffset*col) / this.tileheight;//this.columnOffset.y;
+					dRowF = (yOffset*(col + topLeftTile.col)) / this.tileheight;//this.columnOffset.y;
 					dRow = roundToZero(dRowF);
 
 					if (this.columnOffset.x === 0){

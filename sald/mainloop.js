@@ -10,8 +10,6 @@ window.sald.keys = {}; //all keys currently held down (named by strings below)
 window.sald.mouse = null; //mouse information {x:, y:, buttons:}
 window.sald.takeRightClickInput = true; //should right mouse button trigger events?
 
-
-
 var keyNameToCode = {
 	"BACKSPACE": 8,
 	"TAB": 9,
@@ -141,11 +139,27 @@ var keyCodeToName = generateCodeToName(keyNameToCode);
 var buttonToName = generateCodeToName(buttonNameToCode);
 
 //This function sets up the main loop:
-function start(canvas) {
+function start(canvas, options) {
+
+	if (typeof(options) === "undefined") {
+		options = {};
+	}
 	
 	var sald = window.sald; //redundant, probably
 
-	window.sald.ctx = canvas.getContext('2d');
+	//------------ create context --------------
+
+	if (options.gl) {
+		window.sald.gl = canvas.getContext('webgl', options.gl) || canvas.getContext("experimental-webgl", options.gl);
+	} else {
+		window.sald.ctx = canvas.getContext('2d');
+	}
+
+	//----------- handle init --------------
+	//  (used by meshes and shaders that require a gl context to load)
+	if (window.sald.initFuncs) {
+		window.sald.initFuncs.forEach(function(f){ f(); });
+	}
 
 	//------------ handle canvas sizing --------------
 
@@ -185,9 +199,15 @@ function start(canvas) {
 			canvas.height = height;
 
 			//store the information into the drawing context for other code:
-			sald.ctx.width = width;
-			sald.ctx.height = height;
-			sald.ctx.factor = factor;
+			if (sald.ctx) {
+				sald.ctx.width = width;
+				sald.ctx.height = height;
+				sald.ctx.factor = factor;
+			} else {
+				sald.gl.width = width;
+				sald.gl.height = height;
+				sald.gl.factor = factor;
+			}
 		}
 	}
 

@@ -11,6 +11,13 @@ sald.scene = myScene;
 mainloop.start(document.getElementById("canvas"));
 ```
 
+The `mainloop.start()` method takes a second `options` argument, which currently only has one supported option -- `gl` -- which creates a webgl context instead of a 2d context, and uses the supplied attributes:
+```
+	mainloop.start(document.getElementById("canvas"), {gl:{}}); //webgl canvas, default attribs
+	mainloop.start(document.getElementById("canvas"), {gl:{antialias:false}}); //webgl canvas, 'antialias' attribs set false
+```
+A list of possible attributes are available at https://www.khronos.org/registry/webgl/specs/1.0/#5.2 .
+
 The mainloop module uses the following properties in the `sald` namespace:
 
 ###Canvas

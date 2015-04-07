@@ -114,20 +114,28 @@ Tilemap.prototype.draw = function(camera) {
 		return true;
 	}
 
+	var topLeftTile;
+
 	// Correct camera units to isometric dimensions
 	if (this.columnOffset !== null
 		&& this.columnOffset.x !== -this.tilewidth 
 		&& this.columnOffset.y !== -this.tileheight){
 		camera.x = (camera.x * this.tilewidth) / (this.tilewidth + this.columnOffset.x);
 
-		// Converting the units breaks the bounding box, keep this commented out
-		// camera.y = (camera.y * this.tileheight) / (this.tileheight + this.columnOffset.y);
-	}
 
-	var topLeftTile = {
-		col: Math.floor(camera.x - ((size.x/this.tilewidth) / 2) - 1),
-		row: Math.floor(camera.y + ((size.y/this.tileheight) / 2))
-	};
+		topLeftTile = {
+			col: Math.floor(camera.x - ((size.x/(this.tilewidth + this.columnOffset.x)) / 2) - 1),
+			row: Math.floor(camera.y + ((size.y/this.tileheight) / 2))
+		};
+		// Converting the units breaks the bounding box, keep this commented out
+		camera.y = (camera.y * this.tileheight) / (this.tileheight + this.columnOffset.y);
+	} else {
+		topLeftTile = {
+			col: Math.floor(camera.x - ((size.x/this.tilewidth) / 2) - 1),
+			row: Math.floor(camera.y + ((size.y/this.tileheight) / 2))
+		};
+	}
+	// TODO probably need isometric specific code for this
 	var maxPixel = {
 		x: Math.ceil(camera.x + (size.x / 2)),
 		y: Math.ceil(camera.y + (size.y / 2))
@@ -139,7 +147,7 @@ Tilemap.prototype.draw = function(camera) {
 
 	var switchRowsAndCols = false;
 
-	if (this.columnOffset !== null || !(this.columnOffset.x === 0 && this.columnOffset.y === 0)){
+	if (this.columnOffset !== null && !(this.columnOffset.x === 0 && this.columnOffset.y === 0)){
 		yOffset = this.columnOffset.y;
 
 		var numColsDenom = this.columnOffset.x + this.tilewidth;

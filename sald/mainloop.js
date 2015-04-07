@@ -216,6 +216,14 @@ function start(canvas, options) {
 	//also call it now to set up a good initial size:
 	resized();
 
+	window.addEventListener('resize', function(){
+		resized();
+		
+		sald.scene && sald.scene.resize && sald.scene.resize();
+
+		return false;
+	});
+
 
 	// -----------------------
 	// ----- Main Loop -------

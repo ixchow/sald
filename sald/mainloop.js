@@ -212,10 +212,6 @@ function start(canvas, options) {
 	}
 
 	//install 'resized' to handle window resize events:
-	window.addEventListener('resize', resized);
-	//also call it now to set up a good initial size:
-	resized();
-
 	window.addEventListener('resize', function(){
 		resized();
 		
@@ -223,6 +219,9 @@ function start(canvas, options) {
 
 		return false;
 	});
+
+	//also call it now to set up a good initial size:
+	resized();
 
 
 	// -----------------------

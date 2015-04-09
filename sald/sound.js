@@ -1,8 +1,12 @@
 var volume = 1.0;
-var isMuted = false;
+var isMuted_ = false;
 var unmutedVolume = volume;
 
 var playingSounds = new Set();
+
+var isMuted = function(){
+	return isMuted_;
+}
 
 var removeInactiveSounds = function (){
 	var replaceSet = new Set();
@@ -18,14 +22,13 @@ var removeInactiveSounds = function (){
 }
 
 var setCurrentVolume = function(volume_){
-	volume = volume_;
+	volume = Math.max(0, Math.min(1, volume_));
 
 	var replaceSet = new Set();
 
 	// Remove sounds that aren't being played
 	playingSounds.forEach(function(sound) {
 		if (!sound.ended){
-
 			sound.volume = volume;
 
 			replaceSet.add(sound);
@@ -36,9 +39,9 @@ var setCurrentVolume = function(volume_){
 }
 
 var setVolume = function(volume_){
-	unmutedVolume = volume_;
+	unmutedVolume = Math.max(0, Math.min(1, volume_));
 
-	setCurrentVolume(volume_);
+	setCurrentVolume(unmutedVolume);
 }
 
 var getVolume = function() {
@@ -46,11 +49,10 @@ var getVolume = function() {
 }
 
 var toggleMute = function(){
-	isMuted = !isMuted;
-	setMute(isMuted);
+	setIsMuted(!isMuted_);
 }
 
-var setMute = function(bool){
+var setIsMuted = function(bool){
 	isMuted = bool;
 
 	if (isMuted){
@@ -78,5 +80,6 @@ module.exports = {
 	getVolume:getVolume,
 	addPlayingSound:addPlayingSound,
 	toggleMute:toggleMute,
-	setMute:setMute,
+	setIsMuted:setIsMuted,
+	isMuted:isMuted
 };

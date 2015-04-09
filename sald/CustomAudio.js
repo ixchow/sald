@@ -13,6 +13,19 @@ var CustomAudio = function (mimeType_, encoding_, loadedFile_){
 
 	var volume = 1.0;
 
+	var updateLiveInstances = function(){
+		var replaceSet = new Set();
+
+		liveInstances.forEach(function(audio) {
+			if (!audio.ended){
+				audio.loop = loops;
+				replaceSet.add(audio);
+			}
+		});
+
+		liveInstances = replaceSet;
+	}
+
 	var addInstance = function(){
 		var temp = new Audio('data:audio/' + mimeType + ';' + encoding + ',' + loadedFile);
 
@@ -48,7 +61,20 @@ var CustomAudio = function (mimeType_, encoding_, loadedFile_){
 	}
 
 	this.setVolume = function(vol){
-		volume = vol;
+		volume = Math.max(0, Math.min(1, vol));
+
+		var replaceSet = new Set();
+
+		var volToSet = volume * sound.getVolume();
+
+		liveInstances.forEach(function(audio) {
+			if (!audio.ended){
+				audio.volume = volToSet;
+				replaceSet.add(audio);
+			}
+		});
+
+		liveInstances = replaceSet;
 	}
 
 	this.play = function(){
@@ -82,6 +108,11 @@ var CustomAudio = function (mimeType_, encoding_, loadedFile_){
 		});
 
 		liveInstances = replaceSet;
+	}
+
+	this.getNumberOfLiveInstances = function(){
+		updateLiveInstances();
+		return liveInstances.size;
 	}
 
 	// Stops all instances of this sound from playing

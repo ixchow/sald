@@ -2,11 +2,14 @@ var sound = require("sald:sound.js");
 
 var CustomAudio = function (mimeType_, encoding_, loadedFile_){
 	var instances = [];
+	var liveInstances = new Set();
 	var DEFAULT_NUM_INSTANCES = 4;
 	var nextSound = -1;
 	var mimeType = mimeType_;
 	var encoding = encoding_;
 	var loadedFile = loadedFile_;
+
+	var loops = false;
 
 	var volume = 1.0;
 
@@ -26,7 +29,13 @@ var CustomAudio = function (mimeType_, encoding_, loadedFile_){
 		if (numInstances < 0){
 			return false;
 		} else if (num < instances.length){
-			instances.splice(instances.length - num, 1);
+			var toRemove = instances.length - num;
+
+			for (var i = 0; i < toRemove; i++){
+				instances[i].pause();
+			}
+
+			instances.splice(toRemove, 1);
 		} else {
 			for (var i = instances.length; i < num; i++){
 				addInstance();
@@ -57,7 +66,32 @@ var CustomAudio = function (mimeType_, encoding_, loadedFile_){
 			audio.volume = vol;
 			audio.currentTime = 0;
 			audio.play();
+			audio.loop = loops;
 		}
+	}
+
+	this.shouldLoop = function(bool){
+		loops = bool;
+		var replaceSet = new Set();
+
+		liveInstances.forEach(function(audio) {
+			if (!audio.ended){
+				audio.loop = loops;
+				replaceSet.add(audio);
+			}
+		});
+
+		liveInstances = replaceSet;
+	}
+
+	// Stops all instances of this sound from playing
+	this.stop = function(){
+		liveInstances.forEach(function(audio) {
+			audio.pause();
+			audio.currentTime = 0;
+		});
+
+		liveInstances.clear();
 	}
 }
 

@@ -71,6 +71,37 @@ function convexConvexHelper(p1, p2) {
     return true;
 }
 
+function circleConvex(circle, convex){
+    var radius = circle.r;
+    var radiusSq = radius * radius;
+
+    for (var i = 0; i < convex.length; i++) {
+        var x1 = convex[i].x;
+        var y1 = convex[i].y;
+
+        var dx = circle.x - x1;
+        var dy = circle.y - y1;
+        var distsq = dx*dx + dy*dy
+        
+        if (distsq <= radiusSq) return true;
+        
+        var x2 = convex[(i+1) % convex.length].x;
+        var y2 = convex[(i+1) % convex.length].y;
+
+        var x3 = convex[(i+2) % convex.length].x;
+        var y3 = convex[(i+2) % convex.length].y;
+
+        var convexSide = lineSide(x1, y1, x2, y2, x3, y3);
+        var circleSide = lineSide(x1, y1, x2, y2, circle.x, circle.y);
+
+        if (convexSide != circleSide) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
 function lineSide(x1, y1, x2, y2, px, py) {
     return Math.sign((x1-x2)*(py-y1) - (y1-y2)*(px-x1));
 }
@@ -215,6 +246,22 @@ function rayConvex(r, p) {
     return null;
 }
 
+function convertRectToConvex(rect){
+    var x1 = rect.min.x;
+    var y1 = rect.min.y;
+    var x2 = rect.max.x;
+    var y2 = rect.max.y;
+
+    var convex = [
+        {x : x1, y : y1},
+        {x : x2, y : y1},
+        {x : x2, y : y2},
+        {x : x1, y : y2}
+    ];
+
+    return convex;
+}
+
 
 module.exports = {
     circleCircle: circleCircle,
@@ -222,5 +269,7 @@ module.exports = {
     convexConvex: convexConvex,
     rayCircle: rayCircle,
     rayRectangle: rayRectangle,
-    rayConvex: rayConvex
+    rayConvex: rayConvex,
+    circleConvex: circleConvex,
+    convertRectToConvex:convertRectToConvex,
 };

@@ -3,6 +3,10 @@ var collision = require("sald:collide.js");
 var GameObject = function(x_, y_, width_, height_, anchor_){
 	var width = width_;
 	var height = height_;
+
+	if (!width) width = 0;
+	if (!height) height = 0;
+
 	var inputAnchor;
 	var scaledAnchor;
 
@@ -48,10 +52,10 @@ var GameObject = function(x_, y_, width_, height_, anchor_){
 			this.setCollisionRect(inputRect, wasInputRelative);
 		}
 
-		var x = transform.x + scaledAnchor.x;
-		var y = transform.y + scaledAnchor.y;
+		var x = this.transform.x + scaledAnchor.x;
+		var y = this.transform.y + scaledAnchor.y;
 
-		var bb = this.collisionRect;
+		var bb = collisionRect;
 		var min_ = {x : x + bb.min.x,
 					y : y + bb.min.y};
 		var max_ = {	
@@ -74,21 +78,16 @@ var GameObject = function(x_, y_, width_, height_, anchor_){
 			this.setCollisionCircle(inputCircle, wasInputRelative);
 		}
 
-		var x = transform.x;
-		var y = transform.y;
+		var x = this.transform.x + scaledAnchor.x;
+		var y = this.transform.y + scaledAnchor.y;
 
-		var bb = this.relativeBoundingBox;
-		var min_ = {x : x + bb.min.x,
-					y : y + bb.min.y};
-		var max_ = {	
-			x : x + bb.max.x,
-			y : y + bb.max.y 
-		}
-
-		return {
-			min : min_,
-			max : max_
+		var circle = {
+			x : x + collisionCircle.x,
+			y : y + collisionCircle.y,
+			r : collisionCircle.r
 		};
+
+		return circle;
 	} 
 
 	this.collisionConvex = function(){
@@ -100,21 +99,24 @@ var GameObject = function(x_, y_, width_, height_, anchor_){
 			this.setCollisionConvex(inputConvex, wasInputRelative);
 		}
 
-		var x = transform.x;
-		var y = transform.y;
+		var poly = [];
+		var points = this.collisionConvex;
 
-		var bb = this.relativeBoundingBox;
-		var min_ = {x : x + bb.min.x,
-					y : y + bb.min.y};
-		var max_ = {	
-			x : x + bb.max.x,
-			y : y + bb.max.y 
+		var x = this.transform.x + scaledAnchor.x;
+		var y = this.transform.y + scaledAnchor.y;
+
+		for (var i = 0; i < points.length; i++){
+			var oldPoint = points[i];
+
+			var pt = {
+				x : oldPoint.x + x,
+				y : oldPoint.y + y
+			};
+
+			poly.push(pt);
 		}
 
-		return {
-			min : min_,
-			max : max_
-		};
+		return poly;
 	}
 
 	this.getWidth = function() {
@@ -287,11 +289,6 @@ GameObject.prototype.collisionShape = function() {
 		return null;
 	}
 };
-
-GameObject.prototype.updateTransform = function(pos){
-	this.transform.x = pos.x;
-	this.transform.y = pos.y;
-}
 
 GameObject.prototype.isColliding = function(obj2){
 	var shape2 = obj2.collisionShape();

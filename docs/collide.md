@@ -1,6 +1,19 @@
 # Collision Detection Library
-________________________________________________________________________________________________________________________
+***
 The collision library is used to test collisions between various shapes. The compiled collide.js can be viewed [here](../sald/collide.js)
+
+##Usage
+###Require collide.js in your code
+```
+var col = require('sald:collide.js');
+```
+Following which you can use any of the functions suported by the collision library as follows:
+###Example
+```
+if (col.rectangleRectangle(Rect1, Rect2)) {	//Check collision between Rect1 and Rect2
+				//If they collide then do something
+			}
+```
 
 ## Specifications
 
@@ -64,9 +77,7 @@ Ray
 ```
 ##Functions
 
-###Function
 `function rectangleRectangle(r1,r2)`
-
 ###Description
 Check to see if r1 and r2 overlap
 
@@ -79,10 +90,7 @@ Check to see if r1 and r2 overlap
 ###Returns
 `bool` true if r1 and r2 overlap, otherwise false
 
-
-###Function
 `function rayRectangle(r,b)`
-
 ###Description
 Check to see if r intersetcts b, and return where if it does
 
@@ -96,9 +104,7 @@ Check to see if r intersetcts b, and return where if it does
 `null` if there is no intersection<br>
 `{t: t}` if there is an intersection at (r.start + (r.end - r.start)*t)
 
-###Function
 `function circleCircle(c1,c2)`
-
 ###Description
 Check to see if c1 and c2 overlap
 
@@ -111,9 +117,7 @@ Check to see if c1 and c2 overlap
 ###Returns
 `bool` true if c1 and c2 overlap, otherwise false
 
-###Function
 `function rayCircle(r,c)`
-
 ###Description
 Check to see if r intersetcts c, and return where if it does
 
@@ -127,9 +131,7 @@ Check to see if r intersetcts c, and return where if it does
 `null` if there is no intersection<br>
 `{t: t}` if there is an intersection at (r.start + (r.end - r.start)*t)
 
-###Function
 `function convexConvex(p1, p2)`
-
 ###Description
 Check to see if p1 and p2 (Convex Polygons) overlap
 
@@ -142,9 +144,7 @@ Check to see if p1 and p2 (Convex Polygons) overlap
 ###Returns
 `bool` true if c1 and c2 overlap, otherwise false
 
-###Function
 `function rayConvex(r,p)`
-
 ###Description
 Check to see if r intersetcts p (Convex Polygon), and return where if it does
 

@@ -1,12 +1,16 @@
 #Sprite Library
+Allows the user to draw sprites from a spritesheet and define various animations to be drawn
 
+###Definition
 -> Create a new sprite object in your game scene file like below
 
+```
 var sprite = require('sald:Sprite.js');
 var heroImg = require('../img/spritesheet.png'); 
-
+```
 All the spritesheet objects to be animated have to be strictly defined as below: 
 
+```
 var heroSprite = new sprite(heroImg, {
 	'walk' : {
 		x:0,y:0,
@@ -19,7 +23,7 @@ var heroSprite = new sprite(heroImg, {
 		size:4
 	}
 })
-
+```
 The first parameter is the spritesheet image, heroImg in this case is the entire spritesheet image with several different animation frames within it. The second parameter has to be a list of animations by name along with x, y, width, height and size properties.
 
 [x,y represent the indexes in pixel coordinates of start row and column of animation from the spritesheet image]
@@ -37,9 +41,11 @@ A note about proper sprite splicing: The x and y properties above are what the e
   * anchorx: x anchor value (0-1)
   * anchory: y anchor value (0-1)
 
-  Usage: Call the draw function inside the update loop.
-  			sprite.draw(anim, x, y, )
-
+###Usage
+Call the draw function inside the update loop.
+```
+  sprite.draw(anim, x, y, )
+```
 You do not need to give the frame number in draw function anymore because it is handled by a framework called Animators inside the Sprite object.
   When you initialize a Sprite object, each animation of sprite gets an animator object attached to it internally which handles the state of the animation.
   It also provides neat features like animation speed, looping functionality and stop feature.

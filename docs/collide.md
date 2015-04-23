@@ -1,5 +1,5 @@
 # Collision Detection Library
-***
+
 The collision library is used to test collisions between various shapes. The compiled collide.js can be viewed [here](../sald/collide.js)
 
 ##Usage

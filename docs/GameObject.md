@@ -49,7 +49,7 @@ var circle = {
 	y : 40,
 };
 
-// A circle at the center of the defined GameObject which will, if the anchor is at {x : 0, y : 0} (which is the default behavior)
+// A circle half the width away from the anchor and half the height away from the anchor
 var relativeCircle = {
 	r : 0.5, // r is relative to the GameObject's width
 	x : 0.5,
@@ -70,8 +70,8 @@ var rectangle = {
 
 var relativeRectangle = {
 	min : {
-		x : 0,
-		y : 0
+		x : -0.5,
+		y : -0.5
 	},
 	max : {
 		x : 0.5,

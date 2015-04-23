@@ -34,7 +34,6 @@ var player2 = new GameObject(x, y, width, height, { x : 0, y : 0 });
 If you want the collision shape to be different, you can change it. For example:
 
 ```
-
 ...
 
 var player1 = new GameObject(x, y, width, height, anchor);
@@ -97,8 +96,6 @@ player3.setCollisionCircle(circle, false);
 player4.setCollisionCircle(relativeCircle, true);
 
 player5.setCollisionConvex(convexPolygon, false);
-
-
 ```
 
 ## Specifications
@@ -107,19 +104,15 @@ GameObject.js supports collisions between Convex Polygons, Circles, and Rectangl
 Any two of the listed shapes can collide with each other. (circle/circle, rectangle/circle, etc.)
 
 ```
-
 if (player.isColliding(ball)){
 	// decide what happens when the objects are colliding
 }
-
 ```
 
 You can also retrieve the collision shape as follows:
 
 ```
-
 var shape = player.collisionShape();
-
 ```
 
 Shape will be null if there is no collider, otherwise it will be a json object containing a key that is either "rect", "circle", or "convex", and the value will be the collision object.

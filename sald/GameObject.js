@@ -7,10 +7,6 @@ var GameObject = function(x_, y_, width_, height_, anchor_){
 	if (!width) width = 0;
 	if (!height) height = 0;
 
-	if (width && height){
-		this.setCollisionRect({ min : {0,0}, max : {1,1} }, true);
-	}
-
 	var inputAnchor;
 	var scaledAnchor;
 
@@ -280,6 +276,10 @@ var GameObject = function(x_, y_, width_, height_, anchor_){
 			this.setCollisionConvex(shape.convex, isRelative);
 		}
 	}
+
+	// if (width && height){
+	// 	this.setCollisionRect({ min : {x : 0, y : 0}, max : {x : 1, y : 1} }, true);
+	// }
 }
 
 GameObject.prototype.collisionShape = function() {

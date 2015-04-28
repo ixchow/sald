@@ -137,7 +137,6 @@ function createAnimators(drawData)
 Sprite.prototype.draw = function (anim, x, y, angle, scalex, scaley, anchorx, anchory) {
     var drawData = this.animators[anim].getNextFrameData();
 
-console.log(drawData.width);
   //draw this stuff
   if(window.sald.ctx) {
     window.sald.ctx.save();
@@ -146,7 +145,7 @@ console.log(drawData.width);
 
     //locally flip the 'y' axis since images draw with upper-left origins:
     window.sald.ctx.transform(1, 0,
-      0,-1,
+      0,1,
       Math.round(x*drawData.width - anchorx*drawData.width)/drawData.width,
       Math.round(y*drawData.height - anchory*drawData.height)/drawData.height
     );

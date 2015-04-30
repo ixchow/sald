@@ -1,7 +1,7 @@
 ##sound.js
 SALD provides a sound support. To use:
 ```
-var soundController = require('sald:sound.js');
+var soundController = require('sald:soundController.js');
 
 var explosionSound = require('./data/sounds/explosion.ogg');
 

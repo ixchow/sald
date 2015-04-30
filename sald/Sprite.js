@@ -166,14 +166,8 @@ module.exports = Sprite;
 
 function rotate(x, y, drawData, angle, anchorx, anchory)
 {
-    //console.log("drawdatawidth hero sprite: " + drawData.width);
-    //console.log("drawdataheight hero sprite: " + drawData.height);
-
     var rotationPointx = x - 1 * (0.5 - anchorx)/drawData.width;
     var rotationPointy = y - 1 * (0.5 - anchory)/drawData.height;
-
-    console.log("rotPtX: " + rotationPointx);
-    console.log("rotPtY: " + rotationPointx);
 
     //rotationPointx = Math.round(x*drawData.width - anchorx*drawData.width)/drawData.width;
     //rotationPointy = Math.round(y*drawData.height - anchory*drawData.height)/drawData.height;
@@ -181,7 +175,6 @@ function rotate(x, y, drawData, angle, anchorx, anchory)
     //works for centering
     //rotationPointx = x; //position of the sprite
     //rotationPointy = y; //position of the sprite
-    
 
     window.sald.ctx.translate(rotationPointx, rotationPointy);
     window.sald.ctx.rotate(angle * Math.PI / 180);

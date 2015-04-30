@@ -169,7 +169,7 @@ function rotate(x, y, drawData, angle, anchorx, anchory)
     //console.log("drawdatawidth hero sprite: " + drawData.width);
     //console.log("drawdataheight hero sprite: " + drawData.height);
 
-    var rotationPointx = x - 1 * (0.5 + anchorx)/drawData.width;
+    var rotationPointx = x - 1 * (0.5 - anchorx)/drawData.width;
     var rotationPointy = y - 1 * (0.5 - anchory)/drawData.height;
 
     console.log("rotPtX: " + rotationPointx);
